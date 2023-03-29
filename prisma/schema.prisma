@@ -1,0 +1,171 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+// Necessary for Next auth
+model Account {
+    id                String  @id @default(cuid())
+    userId            String
+    type              String
+    provider          String
+    providerAccountId String
+    refresh_token     String? @db.Text
+    access_token      String? @db.Text
+    expires_at        Int?
+    token_type        String?
+    scope             String?
+    id_token          String? @db.Text
+    session_state     String?
+    user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@unique([provider, providerAccountId])
+}
+
+model Session {
+    id           String   @id @default(cuid())
+    sessionToken String   @unique
+    userId       String
+    expires      DateTime
+    user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model User {
+    id            String        @id @default(cuid())
+    name          String?
+    uniqueName    String?       @unique
+    email         String?       @unique
+    emailVerified DateTime?
+    image         String?
+    role          UserRole      @default(REGULAR)
+    accounts      Account[]
+    sessions      Session[]
+    rooms         Room[]        @relation("rooms")
+    invites       Room[]        @relation("invites")
+    groups        Group[]
+    braketSlot1   Bracket[]     @relation("braketSlot1")
+    braketSlot2   Bracket[]     @relation("braketSlot2")
+    leaderboards  Leaderboard[]
+    gamesAsWhite  Game[]        @relation("gamesAsWhite")
+    gamesAsBlack  Game[]        @relation("gamesAsBlack")
+}
+
+enum UserRole {
+    REGULAR
+    MOD
+    ADMIN
+}
+
+model VerificationToken {
+    identifier String
+    token      String   @unique
+    expires    DateTime
+
+    @@unique([identifier, token])
+}
+
+model Room {
+    id              String      @id @default(cuid())
+    title           String      @default("Название комнаты")
+    tournamentId    String?
+    creatorUsername String
+    inviteeUsername String?
+    lastMove        String?
+    score           String      @default("0 - 0")
+    createdAt       DateTime    @default(now())
+    tournament      Tournament? @relation(fields: [tournamentId], references: [id])
+    status          Status      @default(INITIALIZING)
+    creatorUser     User        @relation(name: "rooms", fields: [creatorUsername], references: [uniqueName])
+    inviteeUser     User?       @relation(name: "invites", fields: [inviteeUsername], references: [uniqueName])
+    Bracket         Bracket?
+    Games           Game[]
+}
+
+model Game {
+    id            String   @id @default(cuid())
+    roomId        String
+    whiteUsername String
+    blackUsername String
+    createdAt     DateTime @default(now())
+    history       String   @default("1. ") @db.Text //AN format 
+    position      String   @default("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
+    status        Status   @default(INITIALIZING)
+    whiteUser     User     @relation(name: "gamesAsWhite", fields: [whiteUsername], references: [uniqueName])
+    blackUser     User     @relation(name: "gamesAsBlack", fields: [blackUsername], references: [uniqueName])
+    room          Room     @relation(fields: [roomId], references: [id])
+
+    @@index([roomId])
+}
+
+enum Status {
+    INITIALIZING
+    WAITING
+    STARTED
+    PAUSED
+    ENDED
+    ERROR
+}
+
+model Tournament {
+    id          String        @id @default(cuid())
+    title       String        @default("Название турнира")
+    status      Status        @default(INITIALIZING)
+    withGroups  Boolean       @default(true)
+    inviteOnly  Boolean       @default(false)
+    Groups      Group[]
+    Brackets    Bracket[]
+    Leaderboard Leaderboard[]
+    Rooms       Room[]
+}
+
+model Group {
+    id           Int        @id @default(autoincrement())
+    tournamentId String
+    groupNumber  Int
+    username     String
+    points       Int        @default(0)
+    tournament   Tournament @relation(fields: [tournamentId], references: [id])
+    user         User       @relation(fields: [username], references: [uniqueName])
+
+    @@index([tournamentId])
+}
+
+model Bracket {
+    id           Int        @id @default(autoincrement())
+    round        Int
+    tournamentId String
+    player1Name  String?
+    player2Name  String?
+    nextWId      Int?
+    nextLId      Int?
+    groupNumber  Int?
+    roomId       String     @unique
+    room         Room       @relation(fields: [roomId], references: [id])
+    tournament   Tournament @relation(fields: [tournamentId], references: [id])
+    player1      User?      @relation(name: "braketSlot1", fields: [player1Name], references: [uniqueName])
+    player2      User?      @relation(name: "braketSlot2", fields: [player2Name], references: [uniqueName])
+    nextW        Bracket?   @relation(name: "prevW", fields: [nextWId], references: [id])
+    nextL        Bracket?   @relation(name: "prevL", fields: [nextLId], references: [id])
+    prevW        Bracket[]  @relation("prevW")
+    prevL        Bracket[]  @relation("prevL")
+
+    @@index([tournamentId])
+}
+
+model Leaderboard {
+    id           Int        @id @default(autoincrement())
+    tournamentId String
+    place        Int
+    username     String
+    user         User       @relation(fields: [username], references: [uniqueName])
+    tournament   Tournament @relation(fields: [tournamentId], references: [id])
+
+    @@index([tournamentId])
+}
