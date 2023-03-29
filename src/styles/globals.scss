@@ -39,10 +39,16 @@ main {
 
     &--pieces {
         position: absolute;
-        right: 50%;
-        transform: translateX(+50%);
+        margin: 1em 0;
+        left: 50%;
+        transform: translateX(-50%);
     }
 }
+
+.chess-piece {
+    touch-action: none;
+}
+
 
 .chess-tile {
     box-sizing: content-box;
@@ -58,5 +64,9 @@ main {
 
     &--selected {
         filter: hue-rotate(60deg);
+    }
+
+    &--capture {
+        background-color: #34364C;
     }
 }

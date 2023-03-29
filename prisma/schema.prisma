@@ -88,22 +88,6 @@ model Room {
     Games           Game[]
 }
 
-model Game {
-    id            String   @id @default(cuid())
-    roomId        String
-    whiteUsername String
-    blackUsername String
-    createdAt     DateTime @default(now())
-    history       String   @default("1. ") @db.Text //AN format 
-    position      String   @default("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
-    status        Status   @default(INITIALIZING)
-    whiteUser     User     @relation(name: "gamesAsWhite", fields: [whiteUsername], references: [uniqueName])
-    blackUser     User     @relation(name: "gamesAsBlack", fields: [blackUsername], references: [uniqueName])
-    room          Room     @relation(fields: [roomId], references: [id])
-
-    @@index([roomId])
-}
-
 enum Status {
     INITIALIZING
     WAITING
@@ -111,6 +95,30 @@ enum Status {
     PAUSED
     ENDED
     ERROR
+}
+
+model Game {
+    id            String     @id @default(cuid())
+    roomId        String
+    whiteUsername String
+    blackUsername String
+    createdAt     DateTime   @default(now())
+    history       String     @default("1. ") @db.Text //AN format 
+    position      String     @default("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
+    status        GameStatus @default(INITIALIZING)
+    whiteUser     User       @relation(name: "gamesAsWhite", fields: [whiteUsername], references: [uniqueName])
+    blackUser     User       @relation(name: "gamesAsBlack", fields: [blackUsername], references: [uniqueName])
+    room          Room       @relation(fields: [roomId], references: [id])
+
+    @@index([roomId])
+}
+
+enum GameStatus {
+    INITIALIZING
+    PLAYING
+    TIE
+    BLACKWON
+    WHITEWON
 }
 
 model Tournament {

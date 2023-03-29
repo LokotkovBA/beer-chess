@@ -1,5 +1,5 @@
-import { useDraggable } from "@dnd-kit/core";
-import { animated } from "@react-spring/web";
+import { useDraggable, useDroppable } from "@dnd-kit/core";
+import { CSS } from "@dnd-kit/utilities";
 import React, { memo, useMemo } from "react";
 
 export type PieceNotation = "p" | "b" | "n" | "r" | "q" | "k" | "P" | "B" | "N" | "R" | "Q" | "K";
@@ -13,7 +13,7 @@ function isPieceNotation(value: string): value is PieceNotation {
  * 
  * value - piece in FEN
  */
-type PieceCoordinates = Map<string, PieceNotation>
+export type PieceCoordinates = Map<string, PieceNotation>
 
 /**
  * Returns the map of piece coordinates
@@ -40,8 +40,8 @@ export function getCoordsFromPosition(boardRanks: number[], boardFiles: string[]
                 file = 0;
                 break;
             default:
-                const curRank = boardRanks[rank];
                 const curFile = boardFiles[file];
+                const curRank = boardRanks[rank];
                 if (isPieceNotation(char) && curRank && curFile) {
                     pieceMap.set(`${curFile}/${curRank}`, char);
                     file++;
@@ -63,7 +63,9 @@ type GenericChessPieceProps = {
     size: string,
     coords: string,
     id: string,
-    disabled: boolean;
+    moveIndex?: number,
+    disabled?: boolean,
+    isLegal?: boolean,
     whiteColor?: string,
     blackColor?: string
 }
@@ -75,13 +77,16 @@ function getPieceColors(isWhite: boolean, whiteColor: string, blackColor: string
     } as const;
 }
 
-const ChessPiece: React.FC<GenericChessPieceProps> = ({ piece, size, id, coords, disabled = false, whiteColor = "#F4F7FA", blackColor = "#34364C" }) => {
+const ChessPiece: React.FC<GenericChessPieceProps> = ({ piece, size, id, coords, moveIndex = -1, disabled = false, isLegal = false, whiteColor = "#F4F7FA", blackColor = "#34364C" }) => {
     const { setNodeRef, attributes: { role, tabIndex }, listeners, transform } = useDraggable({ id: id, disabled, data: { piece, coords } });
-    const style = useMemo(() => ({ ...transform }), [transform]);
+    const { setNodeRef: setDroppable } = useDroppable({ id: id, disabled: !isLegal, data: { moveIndex } });
+    const style = useMemo(() => ({ transform: CSS.Transform.toString(transform) }), [transform]);
     return (
-        <animated.div style={style} role={role} tabIndex={tabIndex} ref={setNodeRef} {...listeners} >
-            <GenericPiece size={size} piece={piece} whiteColor={whiteColor} blackColor={blackColor} />
-        </animated.div>
+        <div className="chess-piece" style={style} role={role} tabIndex={tabIndex} ref={setNodeRef} {...listeners} >
+            <div ref={setDroppable}>
+                <GenericPiece size={size} piece={piece} whiteColor={whiteColor} blackColor={blackColor} />
+            </div>
+        </div>
     );
 };
 
