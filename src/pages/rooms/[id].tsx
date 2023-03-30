@@ -22,7 +22,7 @@ const RoomPage: NextPage<{ id: string }> = ({ id }) => {
                 <meta name="description" content={`Game field for room ${id}`} />
                 <link rel="icon" href="/favicon.ico" />
             </Head>
-            <ChessBoard size={"5rem"} isWhite={true} gameId={id} />
+            <ChessBoard size={"5rem"} boardDefault={true} gameId={id} />
 
         </>
     );

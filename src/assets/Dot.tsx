@@ -4,12 +4,13 @@ import React, { type PropsWithChildren } from "react";
 interface DotProps {
     size: string;
     id: string;
+    coords: string;
     moveIndex: number;
     blackColor?: string;
 }
 
-export const Dot: React.FC<DotProps & PropsWithChildren> = ({ size, blackColor = "#34364C", id, moveIndex }) => {
-    const { setNodeRef } = useDroppable({ id: id, data: { moveIndex } });
+export const Dot: React.FC<DotProps & PropsWithChildren> = ({ size, blackColor = "#34364C", id, moveIndex, coords }) => {
+    const { setNodeRef } = useDroppable({ id: id, data: { moveIndex, newCoords: coords } });
     return (
         <div className="legal-move" ref={setNodeRef}>
             <svg width={size} height={size} viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">

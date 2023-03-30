@@ -79,7 +79,7 @@ function getPieceColors(isWhite: boolean, whiteColor: string, blackColor: string
 
 const ChessPiece: React.FC<GenericChessPieceProps> = ({ piece, size, id, coords, moveIndex = -1, disabled = false, isLegal = false, whiteColor = "#F4F7FA", blackColor = "#34364C" }) => {
     const { setNodeRef, attributes: { role, tabIndex }, listeners, transform } = useDraggable({ id: id, disabled, data: { piece, coords } });
-    const { setNodeRef: setDroppable } = useDroppable({ id: id, disabled: !isLegal, data: { moveIndex } });
+    const { setNodeRef: setDroppable } = useDroppable({ id: id, disabled: !isLegal, data: { moveIndex, newCoords: coords } });
     const style = useMemo(() => ({ transform: CSS.Transform.toString(transform) }), [transform]);
     return (
         <div className="chess-piece" style={style} role={role} tabIndex={tabIndex} ref={setNodeRef} {...listeners} >
@@ -95,13 +95,13 @@ export default ChessPiece;
 type GenericPieceProps = {
     size: string,
     piece: string,
-    whiteColor: string,
-    blackColor: string
+    whiteColor?: string,
+    blackColor?: string
 }
 
-const GenericPiece: React.FC<GenericPieceProps> = memo(function Piece({ piece, size, whiteColor, blackColor }) {
+export const GenericPiece: React.FC<GenericPieceProps> = memo(function Piece({ piece, size, whiteColor = "#F4F7FA", blackColor = "#34364C" }) {
     return (
-        <svg className="chess-piece" width={size} height={size} viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg" >
+        <svg width={size} height={size} viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg" >
             {(() => {
                 switch (piece) {
                     case "K":
