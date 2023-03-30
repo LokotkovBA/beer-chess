@@ -5,6 +5,6 @@ import superjson from "superjson";
 
 export const generateSSGHelper = () => createProxySSGHelpers({
     router: appRouter,
-    ctx: { prisma, session: null },
+    ctx: { prisma, session: null, res: null },
     transformer: superjson,
 });

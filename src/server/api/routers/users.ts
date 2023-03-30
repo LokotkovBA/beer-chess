@@ -16,10 +16,10 @@ const gameSelector = {
 
 export const usersRouter = createTRPCRouter({
     get: publicProcedure
-        .input(z.object({ userName: z.string() }))
-        .query(({ ctx, input: { userName } }) => {
+        .input(z.object({ username: z.string() }))
+        .query(({ ctx, input: { username } }) => {
             return ctx.prisma.user.findUnique({
-                where: { uniqueName: userName },
+                where: { uniqueName: username },
                 select: {
                     name: true,
                     image: true,
@@ -29,16 +29,18 @@ export const usersRouter = createTRPCRouter({
             });
         }),
     changeName: protectedProcedure
-        .input(z.object({ name: z.string() }))
-        .mutation(({ ctx, input: { name } }) => {
-            return ctx.prisma.user.update({
+        .input(z.object({ newName: z.string(), oldName: z.string() }))
+        .mutation(async ({ ctx, input: { newName, oldName } }) => {
+            await ctx.prisma.user.update({
                 where: {
                     id: ctx.session.user.id
                 },
                 data: {
-                    name: name,
-                    uniqueName: name.toLowerCase()
+                    name: newName,
+                    uniqueName: newName.toLowerCase()
                 }
             });
+            await ctx.res?.revalidate(`/${oldName.toLowerCase()}`);
+            return ctx.res?.revalidate(`/${newName.toLowerCase()}`);
         })
 });

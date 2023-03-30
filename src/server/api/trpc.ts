@@ -16,12 +16,14 @@
  */
 import { type CreateNextContextOptions } from "@trpc/server/adapters/next";
 import { type Session } from "next-auth";
+import { type NextApiResponse } from "next";
 
 import { getServerAuthSession } from "~/server/auth";
 import { prisma } from "~/server/db";
 
 type CreateContextOptions = {
     session: Session | null;
+    res: NextApiResponse | null;
 };
 
 /**
@@ -36,6 +38,7 @@ type CreateContextOptions = {
  */
 const createInnerTRPCContext = (opts: CreateContextOptions) => {
     return {
+        res: opts.res,
         session: opts.session,
         prisma,
     };
@@ -55,6 +58,7 @@ export const createTRPCContext = async (opts: CreateNextContextOptions) => {
 
     return createInnerTRPCContext({
         session,
+        res
     });
 };
 

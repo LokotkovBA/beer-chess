@@ -1,59 +1,47 @@
-import type { GetServerSideProps, NextPage } from "next";
+import type { GetStaticPaths, GetStaticProps, NextPage } from "next";
 import Head from "next/head";
 import Profile from "~/components/Profile";
 import { generateSSGHelper } from "~/server/helpers/ssgHelper";
+import { api } from "~/utils/api";
 
-type NextPageProps = {
-    name: string | null;
-    image: string | null;
-    gamesAsWhite: {
-        roomId: string;
-        whiteUserName: string;
-        blackUserName: string;
-        position: string;
-    }[];
-    gamesAsBlack: {
-        roomId: string;
-        whiteUserName: string;
-        blackUserName: string;
-        position: string;
-    }[];
-} | null
 
-const ProfilePage: NextPage<NextPageProps> = (props) => {
-    console.log(props);
-    if (!props || !props.name) {
+
+const ProfilePage: NextPage<{ username: string }> = ({ username }) => {
+    const { data: userData } = api.users.get.useQuery({ username });
+    if (!userData || !userData.name) {
         return <div>404</div>;
     }
 
-    const { name, image } = props;
     return (
         <>
             <Head>
-                <title>{name}</title>
-                <meta name="description" content={`profile ${name}`} />
+                <title>{username}</title>
+                <meta name="description" content={`profile ${username}`} />
                 <link rel="icon" href="/favicon.ico" />
             </Head>
-            <Profile uniqueName={name} image={image} />
+            <Profile name={userData.name} image={userData.image} />
         </>
     );
 };
 
 export default ProfilePage;
 
-export const getServerSideProps: GetServerSideProps = async (context) => {
-    const ssg = generateSSGHelper();
+export const getStaticProps: GetStaticProps = async (context) => {
     const slug = context.params?.slug;
+    if (typeof slug !== "string") throw new Error("no username");
+    const username = slug.replace("@", "");
 
-    if (typeof slug !== "string") throw new Error("no slug");
-
-    const userName = slug.replace("@", "").toLowerCase();
-
-    const data = await ssg.users.get.fetch({ userName: userName });
-
+    const ssg = generateSSGHelper();
+    await ssg.users.get.prefetch({ username });
     return {
         props: {
-            ...data
+            username,
+            trpcState: ssg.dehydrate()
         }
     };
+};
+
+
+export const getStaticPaths: GetStaticPaths = () => {
+    return { paths: [], fallback: "blocking" };
 };

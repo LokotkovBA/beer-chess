@@ -42,7 +42,7 @@ const Layout = ({ children }: PropsWithChildren) =>
 
 const MainMenu = memo(function MainMenu() {
     return (
-        <ul className="menu">
+        <menu className="menu">
             <li className="menu__item">
                 <Link href="/">🍺</Link>
             </li>
@@ -55,7 +55,7 @@ const MainMenu = memo(function MainMenu() {
             <li className="menu__item">
                 <Auth />
             </li>
-        </ul>
+        </menu>
     );
 });
 
@@ -64,7 +64,7 @@ const Auth: React.FC = () => {
 
     return (
         <div className="menu__profile">
-            <span>{sessionData?.user.name}</span>
+            {sessionData && <Link href={`/${sessionData.user.uniqueName}`}>Профиль {sessionData.user.name}</Link>}
             {sessionData?.user.image && <Image height={24} width={24} alt={`${sessionData.user.uniqueName}'s profile picture`} src={sessionData?.user.image} />}
             <button className={`button ${sessionData ? `button--logout` : `button--login`}`}
                 onClick={sessionData ? () => void signOut() : () => void signIn()}
