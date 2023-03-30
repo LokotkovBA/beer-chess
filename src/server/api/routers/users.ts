@@ -9,8 +9,8 @@ const gameSelector = {
     select: {
         roomId: true,
         position: true,
-        whiteUserName: true,
-        blackUserName: true
+        whiteUsername: true,
+        blackUsername: true
     }
 };
 
