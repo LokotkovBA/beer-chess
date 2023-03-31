@@ -29,7 +29,7 @@ export default ProfilePage;
 export const getStaticProps: GetStaticProps = async (context) => {
     const slug = context.params?.slug;
     if (typeof slug !== "string") throw new Error("no username");
-    const username = slug.replace("@", "");
+    const username = slug[0] === "@" ? slug.replace("@", "") : "";
 
     const ssg = generateSSGHelper();
     await ssg.users.get.prefetch({ username });

@@ -30,7 +30,7 @@ const Profile: React.FC<ProfileProps> = ({ name, image, games }) => {
         <article className="profile">
             {image && <Image width={24} height={24} className="profile__image" alt={`${name}'s profile picture`} src={image} />}
             <form onSubmit={onSubmit} className="profile__name">
-                <input ref={inputRef} className="name_input" type="text" defaultValue={name} style={{ color: "black" }} placeholder="Имя пользователя" />
+                <input ref={inputRef} className="name_input" type="text" defaultValue={name} placeholder="Имя пользователя" />
                 <button className="button" type="submit">Изменить</button>
             </form>
             {games && games.map((game) => {
