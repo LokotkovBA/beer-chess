@@ -30,7 +30,11 @@ const config = {
         ],
         "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
         "semi": "warn",
-        "quotes": ["warn", "double", { "allowTemplateLiterals": true }]
+        "quotes": ["warn", "double", { "allowTemplateLiterals": true }],
+        "jsx-quotes": [
+            "warn",
+            "prefer-double"
+        ],
     },
 };
 
