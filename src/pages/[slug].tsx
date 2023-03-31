@@ -15,8 +15,8 @@ const ProfilePage: NextPage<{ username: string }> = ({ username }) => {
     return (
         <>
             <Head>
-                <title>{username}</title>
-                <meta name="description" content={`profile ${username}`} />
+                <title>{userData.name}</title>
+                <meta name="description" content={`${userData.name}'s profile page`} />
                 <link rel="icon" href="/favicon.ico" />
             </Head>
             <Profile name={userData.name} image={userData.image} />

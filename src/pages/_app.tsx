@@ -79,7 +79,7 @@ const Auth: React.FC = () => {
 
     return (
         <div className="menu__profile">
-            {sessionData && <Link href={`/${sessionData.user.uniqueName}`}>Профиль {sessionData.user.name}</Link>}
+            {sessionData && <Link href={`/@${sessionData.user.uniqueName}`}>Профиль {sessionData.user.name}</Link>}
             {sessionData?.user.image && <Image height={24} width={24} alt={`${sessionData.user.uniqueName}'s profile picture`} src={sessionData?.user.image} />}
             <button className={`button ${sessionData ? `button--logout` : `button--login`}`}
                 onClick={sessionData ? () => void signOut() : () => void signIn()}
