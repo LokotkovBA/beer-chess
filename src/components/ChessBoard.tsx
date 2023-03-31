@@ -141,7 +141,7 @@ export const ChessBoard: React.FC<ChessBoardProps> = memo(function ChessBoard({ 
                             );
                         });
                         curColor = curColor === "white" ? "black" : "white";
-                        return <div key={rank} id={`${rank}`} className='chess-board__row'>{files}</div>;
+                        return <div key={rank} id={`${rank}`} className="chess-board__row">{files}</div>;
                     })}
                 </div>
             </DndContext>
@@ -160,25 +160,11 @@ type TileProps = {
 }
 
 const Tile: React.FC<TileProps & PropsWithChildren> = ({ color, size, children, isLegal = false, hasPiece = false }) => {
-    const [hovering, setHovering] = useState(false);
     const style = useMemo(() => ({ width: size, height: size }), [size]);
-    function onMouseEnter() {
-        if (isLegal) {
-            setHovering(true);
-        }
-    }
-
-    function onMouseLeave() {
-        if (isLegal) {
-            setHovering(false);
-        }
-    }
     return (
         <div
-            onMouseEnter={onMouseEnter}
-            onMouseLeave={onMouseLeave}
             style={style}
-            className={`chess-tile chess-tile--${color}${hovering ? " chess-tile--selected" : ""}${(hasPiece && isLegal) ? " chess-tile--capture" : ""}`}
+            className={`chess-tile chess-tile--${color}${(hasPiece && isLegal) ? " chess-tile--capture" : ""}`}
         >
             {children}
         </div>
@@ -200,7 +186,7 @@ const PromotionMenu: React.FC<PromotionMenuProps> = ({ size, isWhite, promoteDat
         <menu>
             {promoteData.map(({ piece, index }) => {
                 return (
-                    <li key={index} onClick={() => selectPiece(index)}>
+                    <li className="chess-piece--capture" key={index} onClick={() => selectPiece(index)}>
                         <GenericPiece size={size} piece={isWhite ? piece.toUpperCase() : piece} />
                     </li>
                 );

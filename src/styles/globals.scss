@@ -2,9 +2,24 @@ html,
 body {
     padding: 0;
     margin: 0;
+    background-color: var(--background-color);
+}
+
+:root {
+    --background-color: #242424;
+    --alert-color: #1A1A1A;
+    --text-color: rgba(255, 255, 255, 0.87);
+    color-scheme: light dark;
     font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen,
         Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
-    background-color: black;
+    line-height: 1.5;
+    font-weight: 400;
+
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-text-size-adjust: 100%;
 }
 
 a {
@@ -26,10 +41,6 @@ main {
     flex-wrap: wrap;
 }
 
-// .chess-piece {
-//     position: absolute;
-// }
-
 .chess-board {
     margin: 1em auto;
 
@@ -45,10 +56,27 @@ main {
     }
 }
 
-.chess-piece {
-    touch-action: none;
+.alert {
+    background-color: var(--background-color);
+    color: var(--text-color);
 }
 
+.chess-piece {
+    touch-action: none;
+
+    &--active {
+        cursor: grab;
+    }
+
+    &--dragging {
+        cursor: grabbing;
+    }
+
+    &--capture {
+        cursor: pointer;
+    }
+
+}
 
 .chess-tile {
     box-sizing: content-box;
@@ -68,5 +96,13 @@ main {
 
     &--capture {
         background-color: #34364C;
+    }
+}
+
+
+@media (prefers-color-scheme: light) {
+    :root {
+        --background-color: #ffffff;
+        --text-color: #213547;
     }
 }

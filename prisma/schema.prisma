@@ -105,6 +105,7 @@ model Game {
     createdAt     DateTime   @default(now())
     history       String     @default("1. ") @db.Text //AN format 
     position      String     @default("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
+    timeRule      String // time in minutes / increment in seconds (-1 = timer is off)
     status        GameStatus @default(INITIALIZING)
     whiteUser     User       @relation(name: "gamesAsWhite", fields: [whiteUsername], references: [uniqueName])
     blackUser     User       @relation(name: "gamesAsBlack", fields: [blackUsername], references: [uniqueName])

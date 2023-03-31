@@ -1,16 +1,20 @@
-import { type NextPage } from "next";
+import { type GetStaticProps, type NextPage } from "next";
 import Head from "next/head";
 import { api } from "~/utils/api";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { toast } from "react-hot-toast";
+import { generateSSGHelper } from "~/server/helpers/ssgHelper";
+import { useRef, useState } from "react";
+import { CreationForm } from "~/components/CreationForm";
+import { socket } from "~/server/gameServer";
 
 const RoomsPage: NextPage = () => {
-    const { data, isSuccess, isError } = api.rooms.getAll.useQuery();
+    const { data } = api.rooms.getAll.useQuery();
     const { status: sessionStatus } = useSession();
 
-    if (isError) {
-        toast.error("Failed to load list of rooms");
+    if (!data) {
+        return <div>500</div>;
     }
 
     return (
@@ -21,8 +25,8 @@ const RoomsPage: NextPage = () => {
                 <link rel="icon" href="/favicon.ico" />
             </Head>
             <div>
-                {isSuccess && data.map(({ id }, index) => {
-                    return <Link key={id} href={`/rooms/${id}`}><span>Room {index + 1}</span></Link>;
+                {data.map(({ id }, index) => {
+                    return <Link key={id} href={`/room/${id}`}><span>Room {index + 1}</span></Link>;
                 })}
                 {sessionStatus === "authenticated" && <CreateRoomSection />}
             </div>
@@ -33,21 +37,55 @@ const RoomsPage: NextPage = () => {
 const CreateRoomSection: React.FC = () => {
     const ctx = api.useContext();
     const { mutate: createRoom, isLoading: isCreating } = api.rooms.create.useMutation({
-        onSuccess: () => {
+        onSuccess: (data) => {
+            toast.success("Success");
             void ctx.rooms.invalidate();
+            if (data) {
+                setRoomId(data.id);
+                modalRef.current?.showModal();
+            }
         },
         onError: (error) => {
             const errorMessage = error.data?.zodError?.fieldErrors.content;
             if (errorMessage && errorMessage[0]) {
                 toast.error(errorMessage[0]);
             }
-            toast.error("Failed to create room! Please try again later.");
+            toast.error("Failed to create room! Please try again later.", { className: "alert" });
         }
     });
 
-    return <button disabled={isCreating} type="button" onClick={() => createRoom()}>
-        Create Room
-    </button>;
+    const [roomId, setRoomId] = useState("");
+    const modalRef = useRef<HTMLDialogElement>(null);
+
+    return (
+        <>
+            {isCreating && <div>Creating...</div>}
+            <dialog ref={modalRef}>
+                <button type="button" onClick={() => {
+                    if (roomId) {
+                        socket.emit("leave room", { roomId });
+                    }
+                    modalRef.current?.close();
+                }}>Закрыть</button>
+                <CreationForm roomId={roomId} />
+                <Link href={`room/${roomId}`}>Перейти в комнату</Link>
+            </dialog>
+            <button disabled={isCreating} type="button" onClick={() => createRoom()}>
+                Create Room
+            </button>
+        </>
+    );
 };
 
 export default RoomsPage;
+
+export const getStaticProps: GetStaticProps = async () => {
+    const ssg = generateSSGHelper();
+
+    await ssg.rooms.getAll.prefetch();
+    return {
+        props: {
+            trpcState: ssg.dehydrate()
+        }
+    };
+};

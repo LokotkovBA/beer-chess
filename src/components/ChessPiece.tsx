@@ -78,11 +78,11 @@ function getPieceColors(isWhite: boolean, whiteColor: string, blackColor: string
 }
 
 const ChessPiece: React.FC<GenericChessPieceProps> = ({ piece, size, id, coords, moveIndex = -1, disabled = false, isLegal = false, whiteColor = "#F4F7FA", blackColor = "#34364C" }) => {
-    const { setNodeRef, attributes: { role, tabIndex }, listeners, transform } = useDraggable({ id: id, disabled, data: { piece, coords } });
+    const { setNodeRef, attributes: { role, tabIndex }, listeners, transform, isDragging } = useDraggable({ id: id, disabled, data: { piece, coords } });
     const { setNodeRef: setDroppable } = useDroppable({ id: id, disabled: !isLegal, data: { moveIndex, newCoords: coords } });
     const style = useMemo(() => ({ transform: CSS.Transform.toString(transform) }), [transform]);
     return (
-        <div className="chess-piece" style={style} role={role} tabIndex={tabIndex} ref={setNodeRef} {...listeners} >
+        <div className={`chess-piece${disabled ? "" : " chess-piece--active"}${isDragging ? " chess-piece--dragging" : ""}${isLegal ? " chess-piece--capture" : ""}`} style={style} role={role} tabIndex={tabIndex} ref={setNodeRef} {...listeners} >
             <div ref={setDroppable}>
                 <GenericPiece size={size} piece={piece} whiteColor={whiteColor} blackColor={blackColor} />
             </div>

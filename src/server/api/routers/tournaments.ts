@@ -7,11 +7,12 @@ import {
 
 export const tournamentsRouter = createTRPCRouter({
     create: protectedProcedure
-        .mutation(({ ctx }) => {
+        .mutation(async ({ ctx }) => {
             if (ctx.session.user.role !== "ADMIN") return;
-            return ctx.prisma.tournament.create({
+            await ctx.prisma.tournament.create({
                 data: {}
             });
+            return ctx.res?.revalidate("/tournaments");
         }),
     getAll: publicProcedure
         .query(({ ctx }) => {

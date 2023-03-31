@@ -23,7 +23,13 @@ export const roomsRouter = createTRPCRouter({
         const { success } = await rateLimit.limit(creatorUsername);
         if (!success) throw new TRPCError({ code: "TOO_MANY_REQUESTS" });
 
-        return ctx.prisma.room.create({ data: { creatorUsername } });
+        await ctx.prisma.room.create({ data: { creatorUsername } });
+        await ctx.res?.revalidate("/rooms");
+        return ctx.prisma.room.findFirst({
+            where: { creatorUsername },
+            select: { id: true },
+            orderBy: { createdAt: "desc" }
+        });
     }),
     get: publicProcedure
         .input(z.object({ roomId: z.string() }))
@@ -31,34 +37,16 @@ export const roomsRouter = createTRPCRouter({
             return ctx.prisma.room.findFirst({
                 where: { id: roomId },
                 select: {
-                    creatorUser: true,
                     inviteeUsername: true,
-                    inviteeUser: true,
+                    creatorUsername: true,
                     status: true,
                 }
             });
         }),
-    getPersistent: publicProcedure
-        .input(z.object({ roomId: z.string() }))
-        .query(({ ctx, input: { roomId } }) => {
-            return ctx.prisma.room.findUnique({
-                where: { id: roomId },
-                select: {
-                    title: true,
-                    creatorUser: {
-                        select: {
-                            name: true,
-                            id: true
-                        }
-                    },
-
-                }
-            });
-        }),
     updateInvitee: protectedProcedure
-        .input(z.object({ roomId: z.string(), inviteeUsername: z.string().nonempty() }))
-        .mutation(({ ctx, input: { roomId, inviteeUsername } }) => {
-            return ctx.prisma.room.update({
+        .input(z.object({ roomId: z.string(), inviteeUsername: z.string() }))
+        .mutation(async ({ ctx, input: { roomId, inviteeUsername } }) => {
+            await ctx.prisma.room.update({
                 where: {
                     id: roomId
                 },
@@ -66,19 +54,6 @@ export const roomsRouter = createTRPCRouter({
                     inviteeUsername
                 }
             });
-        }),
-    start: protectedProcedure
-        .input(z.object({ roomId: z.string(), isWhite: z.boolean(), inviteeUsername: z.string().nonempty() }))
-        .mutation(async ({ ctx, input: { roomId, isWhite, inviteeUsername } }) => {
-            const gameParams = {
-                whiteUsername: isWhite ? ctx.session.user.uniqueName : inviteeUsername,
-                blackUsername: isWhite ? inviteeUsername : ctx.session.user.uniqueName,
-            };
-            return ctx.prisma.game.create({
-                data: {
-                    ...gameParams,
-                    roomId
-                }
-            });
+            return ctx.res?.revalidate(`/room/${roomId}`);
         })
 });

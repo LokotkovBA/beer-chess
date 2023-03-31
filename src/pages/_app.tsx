@@ -8,7 +8,8 @@ import "~/styles/globals.scss";
 import { Toaster } from "react-hot-toast";
 import Link from "next/link";
 import Image from "next/image";
-import { memo, type PropsWithChildren } from "react";
+import { memo, useEffect, type PropsWithChildren } from "react";
+import { socket } from "~/server/gameServer";
 
 const MyApp: AppType<{ session: Session | null }> = ({
     Component,
@@ -16,7 +17,7 @@ const MyApp: AppType<{ session: Session | null }> = ({
 }) => {
     return (
         <SessionProvider session={session}>
-            <Toaster position="bottom-center" />
+            <Toaster toastOptions={{ style: { backgroundColor: "var(--alert-color)", color: " var(--text-color)" } }} />
             <Layout>
                 <Component {...pageProps} />
             </Layout>
@@ -27,18 +28,32 @@ const MyApp: AppType<{ session: Session | null }> = ({
 export default api.withTRPC(MyApp);
 
 
-const Layout = ({ children }: PropsWithChildren) =>
-    <>
-        <header>
-            <nav>
-                <MainMenu />
-            </nav>
-        </header>
-        <main>
-            {children}
-        </main>
-    </>;
+const Layout = ({ children }: PropsWithChildren) => {
+    const { data: sessionData } = useSession();
+    useEffect(() => {
+        const uniqueName = sessionData?.user.uniqueName;
+        if (uniqueName) {
+            socket.emit("sub to invites", { uniqueName });
+        }
+        return () => {
+            if (uniqueName) {
+                socket.emit("unsub from invites", { uniqueName });
+            }
+        };
+    }, [sessionData?.user.uniqueName]);
 
+    return (
+        <>
+            <header>
+                <nav>
+                    <MainMenu />
+                </nav>
+            </header>
+            <main>
+                {children}
+            </main>
+        </>);
+};
 
 const MainMenu = memo(function MainMenu() {
     return (
