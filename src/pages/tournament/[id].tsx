@@ -2,6 +2,7 @@ import type { GetStaticPaths, GetStaticProps, NextPage } from "next";
 import Head from "next/head";
 import { api } from "~/utils/api";
 import { generateSSGHelper } from "~/server/helpers/ssgHelper";
+import { PageLayout } from "~/components/PageLayout";
 
 
 const RoomPage: NextPage<{ id: string }> = ({ id }) => {
@@ -20,18 +21,20 @@ const RoomPage: NextPage<{ id: string }> = ({ id }) => {
                 <meta name="description" content={`Game field for room ${id}`} />
                 <link rel="icon" href="/favicon.ico" />
             </Head>
-            <h1>
-                {tournamentData.title}
-            </h1>
-            {tournamentData.Groups.map(group => {
-                return (
-                    <>
-                        <div>Group #{group.groupNumber}</div>
-                        <div>{group.user.name}</div>
-                        <div>Score: {group.points}</div>
-                    </>
-                );
-            })}
+            <PageLayout>
+                <h1>
+                    {tournamentData.title}
+                </h1>
+                {tournamentData.Groups.map(group => {
+                    return (
+                        <>
+                            <div>Group #{group.groupNumber}</div>
+                            <div>{group.user.name}</div>
+                            <div>Score: {group.points}</div>
+                        </>
+                    );
+                })}
+            </PageLayout>
         </>
     );
 };

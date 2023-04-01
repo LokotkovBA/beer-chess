@@ -43,25 +43,26 @@ export const CreationForm: React.FC<{ roomId: string }> = ({ roomId }) => {
 
     return (
         <form method="submit" onSubmit={onSubmit}>
+            <button onClick={() => socket.emit("start game", { gameId: roomId, gameTitle: "kek", playerWhite: "shmeck", playerBlack: "kekw" })}>Debug start</button>
             <input ref={inviteeUsername} placeholder="Имя оппонента" type="text" />
             <button type="button" onClick={() => socket.emit("send invite", { roomId, uniqueName: inviteeUsername.current?.value, name: sessionData?.user.name })}>Отправить приглашение</button>
             <fieldset>
-                <legend>Выберите цвет</legend>
+                <legend>Choose a side</legend>
                 <label htmlFor="white"><GenericPiece size="5rem" piece="K" /></label>
                 <input name="color" value="isWhite" id="white" type="radio" ref={isWhite} />
                 <label htmlFor="black"><GenericPiece size="5rem" piece="k" /></label>
                 <input name="color" value="isBlack" id="black" type="radio" />
             </fieldset>
-            <label htmlFor="timeMode">Лимит по времени</label>
+            <label htmlFor="timeMode">Time control</label>
             <select onChange={(event) => setTimeControl(event.target.value === "realTime")} defaultValue="realTime" id="timeMode">
-                <option value="realTime">Реальное время</option>
-                <option value="noLimit">Без лимта</option>
+                <option value="realTime">Real time</option>
+                <option value="noLimit">Unlimited</option>
             </select>
             {timeControl &&
                 <>
-                    <label htmlFor="sideTime">Минут на сторону</label>
+                    <label htmlFor="sideTime">Minutes per side</label>
                     <input id="sideTime" type="range" min="1" max="20" />
-                    <label htmlFor="sideTime">Инкремент за ход</label>
+                    <label htmlFor="sideTime">Increment per turn in seconds</label>
                     <input id="incrementTime" type="range" min="0" max="20" />
                 </>}
             <button disabled={!isReady} type="submit">Запуск</button>

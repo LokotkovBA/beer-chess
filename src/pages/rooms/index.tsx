@@ -8,6 +8,8 @@ import { generateSSGHelper } from "~/server/helpers/ssgHelper";
 import { useRef, useState } from "react";
 import { CreationForm } from "~/components/CreationForm";
 import { socket } from "~/server/gameServer";
+import { PageLayout } from "~/components/PageLayout";
+import styles from "./index.module.scss";
 
 const RoomsPage: NextPage = () => {
     const { data } = api.rooms.getAll.useQuery();
@@ -24,12 +26,14 @@ const RoomsPage: NextPage = () => {
                 <meta name="description" content="Beer Chess's list of rooms" />
                 <link rel="icon" href="/favicon.ico" />
             </Head>
-            <div>
-                {data.map(({ id }, index) => {
-                    return <Link key={id} href={`/room/${id}`}><span>Room {index + 1}</span></Link>;
-                })}
+            <PageLayout>
                 {sessionStatus === "authenticated" && <CreateRoomSection />}
-            </div>
+                <div className={styles.roomsList}>
+                    {data.map(({ id }, index) => {
+                        return <Link className="link" key={id} href={`/room/${id}`}><span>Room {index + 1}</span></Link>;
+                    })}
+                </div>
+            </PageLayout>
         </>
     );
 };
@@ -60,7 +64,7 @@ const CreateRoomSection: React.FC = () => {
     return (
         <>
             {isCreating && <div>Creating...</div>}
-            <dialog ref={modalRef}>
+            <dialog className="modal" ref={modalRef}>
                 <button type="button" onClick={() => {
                     if (roomId) {
                         socket.emit("leave room", { roomId });

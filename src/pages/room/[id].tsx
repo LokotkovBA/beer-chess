@@ -7,12 +7,13 @@ import { ChessBoard } from "~/components/ChessBoard";
 import { socket } from "~/server/gameServer";
 import { useSession } from "next-auth/react";
 import { CreationForm } from "~/components/CreationForm";
+import { type Session } from "next-auth";
+import { PageLayout } from "~/components/PageLayout";
+import styles from "./[id].module.scss";
 
-
-
-
-const RoomPage: NextPage<{ roomId: string }> = ({ roomId }) => {
+const RoomPage: NextPage<{ roomId: string, session: Session | null }> = ({ roomId }) => {
     const { data: roomData } = api.rooms.get.useQuery({ roomId });
+    const { data: sessionData } = useSession();
     useEffect(() => {
         if (roomData) {
             socket.emit("join room", { roomId });
@@ -23,7 +24,6 @@ const RoomPage: NextPage<{ roomId: string }> = ({ roomId }) => {
             }
         };
     }, [roomId, roomData]);
-    const { data: sessionData } = useSession();
 
     if (!roomData) {
         return <div>404</div>;
@@ -35,22 +35,22 @@ const RoomPage: NextPage<{ roomId: string }> = ({ roomId }) => {
                 <meta name="description" content={`Room page. Creator: ${roomData.creatorUsername}`} />
                 <link rel="icon" href="/favicon.ico" />
             </Head>
-            {sessionData?.user.uniqueName === roomData.creatorUsername ?
-                <CreationForm roomId={roomId} />
-                :
-                (sessionData?.user.name) && (roomData.inviteeUsername === sessionData?.user.uniqueName || !roomData.inviteeUsername) &&
-                <ReadyForm roomId={roomId} creatorName={roomData.creatorUsername} name={sessionData?.user.name} />
-            }
-            <ChessBoard size={"5rem"} boardDefault={true} gameId={roomId} />
+            <PageLayout>
+                <div className={styles.room}>
+                    {sessionData?.user.uniqueName === roomData.creatorUsername ?
+                        <CreationForm roomId={roomId} />
+                        :
+                        (sessionData?.user.name) && (roomData.inviteeUsername === sessionData?.user.uniqueName || !roomData.inviteeUsername) &&
+                        <ReadyForm roomId={roomId} creatorName={roomData.creatorUsername} name={sessionData?.user.name} />
+                    }
+                    <ChessBoard size={"5rem"} boardDefault={true} gameId={roomId} />
+                </div>
+            </PageLayout>
         </>
     );
 };
 
 export default RoomPage;
-
-
-
-
 
 const ReadyForm: React.FC<{ roomId: string, creatorName: string, name: string }> = ({ roomId, creatorName, name }) => {
     const [isReady, setIsReady] = useState(false);

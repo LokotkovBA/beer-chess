@@ -5,15 +5,12 @@ import {
     publicProcedure,
 } from "~/server/api/trpc";
 
-const gameSelector = {
-    select: {
-        roomId: true,
-        position: true,
-        whiteUsername: true,
-        blackUsername: true
-    }
+const roomsSelector = {
+    id: true,
+    title: true,
+    score: true,
+    status: true,
 };
-
 export const usersRouter = createTRPCRouter({
     get: publicProcedure
         .input(z.object({ username: z.string() }))
@@ -23,8 +20,18 @@ export const usersRouter = createTRPCRouter({
                 select: {
                     name: true,
                     image: true,
-                    gamesAsBlack: gameSelector,
-                    gamesAsWhite: gameSelector
+                    rooms: {
+                        select: roomsSelector,
+                        orderBy: {
+                            createdAt: "desc"
+                        }
+                    },
+                    invites: {
+                        select: roomsSelector,
+                        orderBy: {
+                            createdAt: "desc"
+                        }
+                    },
                 },
             });
         }),

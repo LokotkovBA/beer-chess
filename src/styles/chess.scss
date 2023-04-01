@@ -1,0 +1,61 @@
+.chess-piece {
+    touch-action: none;
+
+    &--active {
+        cursor: grab;
+    }
+
+    &--dragging {
+        cursor: grabbing;
+    }
+
+    &--capture {
+        cursor: pointer;
+    }
+}
+
+.chess-tile {
+    box-sizing: content-box;
+    padding: .2em;
+
+    &--black {
+        background-color: #B58863;
+    }
+
+    &--white {
+        background-color: #F0D9B5;
+    }
+
+    &--selected {
+        filter: hue-rotate(60deg);
+    }
+
+    &--capture {
+        background-color: #34364C;
+    }
+}
+
+.promotion-menu {
+    position: fixed;
+    padding: 1em;
+    background-color: var(--alert-color);
+    border-radius: 1em;
+    right: 1em;
+    top: 50vh;
+    transform: translateY(-50%);
+}
+
+.game-wrapper {
+    margin: 1em auto;
+}
+
+.chess-board {
+    &__row {
+        display: flex;
+    }
+
+    &--pieces {
+        position: absolute;
+        transform: translateY(-100%);
+    }
+}

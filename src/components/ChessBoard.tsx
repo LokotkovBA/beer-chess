@@ -1,4 +1,3 @@
-
 import { DndContext } from "@dnd-kit/core";
 import { type DragStartEvent, type DragEndEvent } from "@dnd-kit/core/dist/types";
 import React, { memo, type PropsWithChildren, useMemo, useState, useEffect, useRef } from "react";
@@ -42,7 +41,6 @@ export const ChessBoard: React.FC<ChessBoardProps> = memo(function ChessBoard({ 
 
     return (
         <>
-            <button onClick={() => socket.emit("start game", { gameId, gameTitle: "kek", playerWhite: "shmeck", playerBlack: "kekw" })}>Start</button>
             <InteractiveBoard gameId={gameId} size={size} playerBoardRanks={playerBoardRanks} playerBoardFiles={playerBoardFiles}>
                 <TileBoard ranks={playerBoardRanks} files={playerBoardFiles} size={size} />
             </InteractiveBoard>

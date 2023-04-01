@@ -1,5 +1,6 @@
 import type { GetStaticPaths, GetStaticProps, NextPage } from "next";
 import Head from "next/head";
+import { PageLayout } from "~/components/PageLayout";
 import Profile from "~/components/Profile";
 import { generateSSGHelper } from "~/server/helpers/ssgHelper";
 import { api } from "~/utils/api";
@@ -19,7 +20,9 @@ const ProfilePage: NextPage<{ username: string }> = ({ username }) => {
                 <meta name="description" content={`${userData.name}'s profile page`} />
                 <link rel="icon" href="/favicon.ico" />
             </Head>
-            <Profile name={userData.name} image={userData.image} />
+            <PageLayout>
+                <Profile name={userData.name} image={userData.image} />
+            </PageLayout>
         </>
     );
 };
@@ -29,7 +32,7 @@ export default ProfilePage;
 export const getStaticProps: GetStaticProps = async (context) => {
     const slug = context.params?.slug;
     if (typeof slug !== "string") throw new Error("no username");
-    const username = slug[0] === "@" ? slug.replace("@", "") : "";
+    const username = slug[0] === "@" ? slug.replace("@", "").toLowerCase() : "";
 
     const ssg = generateSSGHelper();
     await ssg.users.get.prefetch({ username });
