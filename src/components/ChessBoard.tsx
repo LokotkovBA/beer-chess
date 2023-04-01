@@ -10,9 +10,7 @@ import { Dot } from "~/assets/Dot";
 type ChessBoardProps = {
     size: string;
     gameId: string;
-    boardDefault: boolean;
-    boardFiles?: string[];
-    boardRanks?: number[];
+    boardDefault?: boolean;
 }
 
 let curColor: TileColor = "black";
@@ -23,7 +21,37 @@ const successSocketMessageSchema = z.object({
     position: z.string()
 });
 
-export const ChessBoard: React.FC<ChessBoardProps> = memo(function ChessBoard({ boardRanks = [1, 2, 3, 4, 5, 6, 7, 8], boardFiles = ["a", "b", "c", "d", "e", "f", "g", "h"], size, boardDefault, gameId }) {
+const boardRanks = [1, 2, 3, 4, 5, 6, 7, 8];
+const boardFiles = ["a", "b", "c", "d", "e", "f", "g", "h"];
+
+export const ChessBoard: React.FC<ChessBoardProps> = memo(function ChessBoard({ size, boardDefault = true, gameId }) {
+    const playerBoardRanks = useMemo(() => {
+        if (!boardDefault) {
+            return boardRanks;
+        }
+        const buf = [...boardRanks];
+        return buf.reverse();
+    }, [boardDefault]);
+    const playerBoardFiles = useMemo(() => {
+        if (boardDefault) {
+            return boardFiles;
+        }
+        const buf = [...boardFiles];
+        return buf.reverse();
+    }, [boardDefault]);
+
+    return (
+        <>
+            <button onClick={() => socket.emit("start game", { gameId, gameTitle: "kek", playerWhite: "shmeck", playerBlack: "kekw" })}>Start</button>
+            <InteractiveBoard gameId={gameId} size={size} playerBoardRanks={playerBoardRanks} playerBoardFiles={playerBoardFiles}>
+                <TileBoard ranks={playerBoardRanks} files={playerBoardFiles} size={size} />
+            </InteractiveBoard>
+        </>
+    );
+});
+
+
+const InteractiveBoard: React.FC<ChessBoardProps & { playerBoardRanks: number[], playerBoardFiles: string[] } & PropsWithChildren> = ({ children, gameId, size, playerBoardFiles, playerBoardRanks }) => {
     const [availableLegalMoves, setAvailableLegalMoves] = useState<string[][]>([]);
     const [showPromotionMenu, setShowPromotionMenu] = useState(false);
     const promoteData = useRef<PromoteData[]>([]);
@@ -49,21 +77,8 @@ export const ChessBoard: React.FC<ChessBoardProps> = memo(function ChessBoard({ 
         return () => {
             socket.off("success");
         };
-    }, [gameId, boardRanks, boardFiles]);
-    const playerBoardRanks = useMemo(() => {
-        if (!boardDefault) {
-            return boardRanks;
-        }
-        const buf = [...boardRanks];
-        return buf.reverse();
-    }, [boardDefault, boardRanks]);
-    const playerBoardFiles = useMemo(() => {
-        if (boardDefault) {
-            return boardFiles;
-        }
-        const buf = [...boardFiles];
-        return buf.reverse();
-    }, [boardDefault, boardFiles]);
+    }, [gameId]);
+
     const [pieceCoords, setPieceCoords] = useState<PieceCoordinates>();
 
     function onDragEnd(event: DragEndEvent) {
@@ -109,12 +124,12 @@ export const ChessBoard: React.FC<ChessBoardProps> = memo(function ChessBoard({ 
         setAvailableLegalMoves(legalMoves.current.filter((move) => move[0]?.includes(coords)));
     }
     return (
-        <>
+        <div className="game-wrapper">
+            {children}
             <DndContext onDragEnd={onDragEnd} onDragStart={onDragStart}>
-                <div className="chess-board">
+                <div className="chess-board chess-board--pieces">
                     {playerBoardRanks.map((rank) => {
                         const files = playerBoardFiles.map((file) => {
-                            curColor = curColor === "white" ? "black" : "white";
                             const curPiece = pieceCoords?.get(`${file}/${rank}`);
                             const tileId = `${file}/${rank}`;
                             let moveIndex = -1;
@@ -129,44 +144,56 @@ export const ChessBoard: React.FC<ChessBoardProps> = memo(function ChessBoard({ 
                                 const disabled = !((whiteTurn && curPiece.toUpperCase() === curPiece) || (!whiteTurn && curPiece.toLowerCase() === curPiece));
                                 const pieceId = `${curPiece}${file}${rank}`;
                                 return (
-                                    <Tile hasPiece={true} isLegal={isLegal} size={size} key={tileId} color={curColor}>
-                                        <ChessPiece moveIndex={moveIndex} isLegal={isLegal} coords={`${file}/${rank}`} key={pieceId} id={pieceId} size={size} piece={curPiece} disabled={disabled} />
-                                    </Tile>
+                                    <EmptyTile key={pieceId} size={size} isLegal={isLegal}>
+                                        <ChessPiece moveIndex={moveIndex} isLegal={isLegal} coords={`${file}/${rank}`} id={pieceId} size={size} piece={curPiece} disabled={disabled} />
+                                    </EmptyTile>
                                 );
                             }
-                            return (
-                                <Tile isLegal={isLegal} size="5rem" key={tileId} color={curColor}>
-                                    {isLegal && <Dot coords={`${file}/${rank}`} moveIndex={moveIndex} key={`dot${tileId}`} id={tileId} size={size} />}
-                                </Tile>
-                            );
+                            return <EmptyTile key={`dot${tileId}`} size={size} >
+                                {isLegal && <Dot coords={`${file}/${rank}`} moveIndex={moveIndex} id={tileId} size={size} />}
+                            </EmptyTile>;
                         });
-                        curColor = curColor === "white" ? "black" : "white";
                         return <div key={rank} id={`${rank}`} className="chess-board__row">{files}</div>;
                     })}
                 </div>
             </DndContext>
-            {showPromotionMenu && <PromotionMenu promoteData={promoteData.current} isWhite={boardDefault} size={size} gameId={gameId} />}
-        </>
+            {showPromotionMenu && <PromotionMenu promoteData={promoteData.current} isWhite={whiteTurn} size={size} gameId={gameId} />}
+        </div>
     );
-});
+};
 
 type TileColor = "white" | "black" | "selected";
 
 type TileProps = {
-    color: TileColor;
+    color?: TileColor;
     size: string;
-    hasPiece?: boolean;
     isLegal?: boolean;
 }
 
-const Tile: React.FC<TileProps & PropsWithChildren> = ({ color, size, children, isLegal = false, hasPiece = false }) => {
-    const style = useMemo(() => ({ width: size, height: size }), [size]);
+const Tile: React.FC<TileProps> = ({ color = "black", size }) => {
+    return <div style={{ minWidth: size, height: size }} className={`chess-tile chess-tile--${color}`} />;
+};
+
+const EmptyTile: React.FC<TileProps & PropsWithChildren> = ({ size, isLegal = false, children }) => {
     return (
-        <div
-            style={style}
-            className={`chess-tile chess-tile--${color}${(hasPiece && isLegal) ? " chess-tile--capture" : ""}`}
-        >
+        <div style={{ minWidth: size, height: size }} className={`chess-tile ${(children && isLegal) ? " chess-tile--capture" : ""}`} >
             {children}
+        </div>
+    );
+};
+
+const TileBoard: React.FC<{ ranks: number[], files: string[], size: string }> = ({ ranks, files, size }) => {
+    return (
+        <div className="chess-board">
+            {ranks.map(rank => {
+                const entireRank = files.map(file => {
+                    curColor = curColor === "white" ? "black" : "white";
+                    const tileId = `${file}${rank}`;
+                    return <Tile size={size} key={tileId} color={curColor} />;
+                });
+                curColor = curColor === "white" ? "black" : "white";
+                return <div key={rank} className="chess-board__row">{entireRank}</div>;
+            })}
         </div>
     );
 };
@@ -183,7 +210,7 @@ const PromotionMenu: React.FC<PromotionMenuProps> = ({ size, isWhite, promoteDat
         socket.emit("move", { gameId: gameId, move: index });
     }
     return (
-        <menu>
+        <menu className="promotion-menu">
             {promoteData.map(({ piece, index }) => {
                 return (
                     <li className="chess-piece--capture" key={index} onClick={() => selectPiece(index)}>

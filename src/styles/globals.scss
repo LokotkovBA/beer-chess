@@ -41,18 +41,18 @@ main {
     flex-wrap: wrap;
 }
 
-.chess-board {
+.game-wrapper {
     margin: 1em auto;
+}
 
+.chess-board {
     &__row {
         display: flex;
     }
 
     &--pieces {
         position: absolute;
-        margin: 1em 0;
-        left: 50%;
-        transform: translateX(-50%);
+        transform: translateY(-100%);
     }
 }
 
@@ -75,7 +75,6 @@ main {
     &--capture {
         cursor: pointer;
     }
-
 }
 
 .chess-tile {
@@ -97,6 +96,16 @@ main {
     &--capture {
         background-color: #34364C;
     }
+}
+
+.promotion-menu {
+    position: fixed;
+    padding: 1em;
+    background-color: var(--alert-color);
+    border-radius: 1em;
+    right: 1em;
+    top: 50vh;
+    transform: translateY(-50%);
 }
 
 

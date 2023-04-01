@@ -40,7 +40,7 @@ export const usersRouter = createTRPCRouter({
                     uniqueName: newName.toLowerCase()
                 }
             });
-            await ctx.res?.revalidate(`/${oldName.toLowerCase()}`);
-            return ctx.res?.revalidate(`/${newName.toLowerCase()}`);
+            await ctx.res?.revalidate(`/@${oldName.toLowerCase()}`);
+            return ctx.res?.revalidate(`/@${newName.toLowerCase()}`);
         })
 });

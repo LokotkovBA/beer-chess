@@ -41,7 +41,6 @@ const RoomPage: NextPage<{ roomId: string }> = ({ roomId }) => {
                 (sessionData?.user.name) && (roomData.inviteeUsername === sessionData?.user.uniqueName || !roomData.inviteeUsername) &&
                 <ReadyForm roomId={roomId} creatorName={roomData.creatorUsername} name={sessionData?.user.name} />
             }
-
             <ChessBoard size={"5rem"} boardDefault={true} gameId={roomId} />
         </>
     );
