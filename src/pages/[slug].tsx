@@ -1,6 +1,5 @@
 import type { GetStaticPaths, GetStaticProps, NextPage } from "next";
 import Head from "next/head";
-import { PageLayout } from "~/components/PageLayout";
 import Profile from "~/components/Profile";
 import { generateSSGHelper } from "~/server/helpers/ssgHelper";
 import { api } from "~/utils/api";
@@ -20,9 +19,7 @@ const ProfilePage: NextPage<{ username: string }> = ({ username }) => {
                 <meta name="description" content={`${userData.name}'s profile page`} />
                 <link rel="icon" href="/favicon.ico" />
             </Head>
-            <PageLayout>
-                <Profile name={userData.name} image={userData.image} />
-            </PageLayout>
+            <Profile name={userData.name} image={userData.image} />
         </>
     );
 };

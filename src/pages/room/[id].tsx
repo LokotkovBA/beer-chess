@@ -8,7 +8,6 @@ import { socket } from "~/server/gameServer";
 import { useSession } from "next-auth/react";
 import { CreationForm } from "~/components/CreationForm";
 import { type Session } from "next-auth";
-import { PageLayout } from "~/components/PageLayout";
 import styles from "./[id].module.scss";
 
 const RoomPage: NextPage<{ roomId: string, session: Session | null }> = ({ roomId }) => {
@@ -35,17 +34,15 @@ const RoomPage: NextPage<{ roomId: string, session: Session | null }> = ({ roomI
                 <meta name="description" content={`Room page. Creator: ${roomData.creatorUsername}`} />
                 <link rel="icon" href="/favicon.ico" />
             </Head>
-            <PageLayout>
-                <div className={styles.room}>
-                    {sessionData?.user.uniqueName === roomData.creatorUsername ?
-                        <CreationForm roomId={roomId} />
-                        :
-                        (sessionData?.user.name) && (roomData.inviteeUsername === sessionData?.user.uniqueName || !roomData.inviteeUsername) &&
-                        <ReadyForm roomId={roomId} creatorName={roomData.creatorUsername} name={sessionData?.user.name} />
-                    }
-                    <ChessBoard size={"5rem"} boardDefault={true} gameId={roomId} />
-                </div>
-            </PageLayout>
+            <div className={styles.room}>
+                {sessionData?.user.uniqueName === roomData.creatorUsername ?
+                    <CreationForm roomId={roomId} />
+                    :
+                    (sessionData?.user.name) && (roomData.inviteeUsername === sessionData?.user.uniqueName || !roomData.inviteeUsername) &&
+                    <ReadyForm roomId={roomId} creatorName={roomData.creatorUsername} name={sessionData?.user.name} />
+                }
+                <ChessBoard size={"5rem"} boardDefault={true} gameId={roomId} />
+            </div>
         </>
     );
 };

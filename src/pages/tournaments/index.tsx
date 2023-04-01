@@ -2,7 +2,6 @@ import { type GetStaticProps, type NextPage } from "next";
 import { useSession } from "next-auth/react";
 import Head from "next/head";
 import { toast } from "react-hot-toast";
-import { PageLayout } from "~/components/PageLayout";
 import { generateSSGHelper } from "~/server/helpers/ssgHelper";
 import { api } from "~/utils/api";
 
@@ -24,12 +23,10 @@ const RoomsPage: NextPage = () => {
                 <meta name="description" content="Beer Chess's list of tournaments" />
                 <link rel="icon" href="/favicon.ico" />
             </Head>
-            <PageLayout>
-                {tournaments?.map((tournament) => {
-                    return `${tournament.title} - ${tournament.status}`;
-                })}
-                {sessionData?.user.role === "ADMIN" && <button type="button" onClick={() => createTournament()}>Создать</button>}
-            </PageLayout>
+            {tournaments?.map((tournament) => {
+                return `${tournament.title} - ${tournament.status}`;
+            })}
+            {sessionData?.user.role === "ADMIN" && <button type="button" onClick={() => createTournament()}>Создать</button>}
         </>
     );
 };
