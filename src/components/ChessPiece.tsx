@@ -1,68 +1,17 @@
 import { useDraggable, useDroppable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
-import React, { memo, useMemo } from "react";
-
-export type PieceNotation = "p" | "b" | "n" | "r" | "q" | "k" | "P" | "B" | "N" | "R" | "Q" | "K";
-const Pieces = ["p", "b", "n", "r", "q", "k", "P", "B", "N", "R", "Q", "K"];
-function isPieceNotation(value: string): value is PieceNotation {
-    return Pieces.includes(value);
-}
-
-/**
- * key - string formated as file/rank
- * 
- * value - piece in FEN
- */
-export type PieceCoordinates = Map<string, PieceNotation>
-
-/**
- * Returns the map of piece coordinates
- * 
- * @param {string} position Position in FEN
- * @returns {Map<string, PieceNotation>} Map of `file/rank`, `piece`
- */
-
-export function getCoordsFromPosition(boardRanks: number[], boardFiles: string[], position = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"): PieceCoordinates {
-    const pieceMap = new Map<string, PieceNotation>();
-    let rank = 7;
-    let file = 0;
-    let positionDone = false;
-    let index = 0;
-    while (!positionDone && index < position.length) {
-        const char = position[index] as string;
-        index++;
-        switch (char) {
-            case " ":
-                positionDone = true;
-                break;
-            case "/":
-                rank--;
-                file = 0;
-                break;
-            default:
-                const curFile = boardFiles[file];
-                const curRank = boardRanks[rank];
-                if (isPieceNotation(char) && curRank && curFile) {
-                    pieceMap.set(`${curFile}/${curRank}`, char);
-                    file++;
-                } else {
-                    let numOfEmpty = parseInt(char);
-                    while (numOfEmpty > 0) {
-                        file++;
-                        numOfEmpty--;
-                    }
-                }
-                break;
-        }
-    }
-    return pieceMap;
-}
+import React, { memo, useCallback, useMemo } from "react";
+import { socket } from "~/server/gameServer";
+import { subscribeToGameStore } from "~/stores/gameStore";
+import { type PieceNotation } from "~/utils/PieceNotation";
 
 type GenericChessPieceProps = {
+    gameId: string,
     piece: PieceNotation,
     size: string,
     coords: string,
     id: string,
+    capturingPieceCoords: string,
     moveIndex?: number,
     disabled?: boolean,
     isLegal?: boolean,
@@ -77,12 +26,14 @@ function getPieceColors(isWhite: boolean, whiteColor: string, blackColor: string
     } as const;
 }
 
-const ChessPiece: React.FC<GenericChessPieceProps> = ({ piece, size, id, coords, moveIndex = -1, disabled = false, isLegal = false, whiteColor = "#F4F7FA", blackColor = "#34364C" }) => {
+const ChessPiece: React.FC<GenericChessPieceProps> = ({ gameId, piece, size, id, coords, moveIndex = -1, capturingPieceCoords, disabled = false, isLegal = false, whiteColor = "#F4F7FA", blackColor = "#34364C" }) => {
+    const useChessStore = subscribeToGameStore(gameId);
+    const makeMove = useChessStore(useCallback(state => state.makeMove, []));
     const { setNodeRef, attributes: { role, tabIndex }, listeners, transform, isDragging } = useDraggable({ id: id, disabled, data: { piece, coords } });
     const { setNodeRef: setDroppable } = useDroppable({ id: id, disabled: !isLegal, data: { moveIndex, newCoords: coords } });
     const style = useMemo(() => ({ transform: CSS.Transform.toString(transform) }), [transform]);
     return (
-        <div className={`chess-piece${disabled ? "" : " chess-piece--active"}${isDragging ? " chess-piece--dragging" : ""}${isLegal ? " chess-piece--capture" : ""}`} style={style} role={role} tabIndex={tabIndex} ref={setNodeRef} {...listeners} >
+        <div onClick={() => makeMove(moveIndex, coords, capturingPieceCoords, socket)} className={`chess-piece${disabled ? "" : " chess-piece--active"}${isDragging ? " chess-piece--dragging" : ""}${isLegal ? " chess-piece--capture" : ""}`} style={style} role={role} tabIndex={tabIndex} ref={setNodeRef} {...listeners} >
             <div ref={setDroppable}>
                 <GenericPiece size={size} piece={piece} whiteColor={whiteColor} blackColor={blackColor} />
             </div>
