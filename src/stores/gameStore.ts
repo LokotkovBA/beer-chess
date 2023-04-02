@@ -27,7 +27,6 @@ const gamesStoreMap = new Map<string, UseBoundStore<StoreApi<ChessState>>>();
 export function subscribeToGameStore(gameId: string) {
     const gameStore = gamesStoreMap.get(gameId);
     if (gameStore) return gameStore;
-    console.log("creating new store");
     const newGameStore = create(setupChessStore(gameId));
     gamesStoreMap.set(gameId, newGameStore);
     return newGameStore;
