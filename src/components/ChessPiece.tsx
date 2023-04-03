@@ -29,7 +29,7 @@ function getPieceColors(isWhite: boolean, whiteColor: string, blackColor: string
 const ChessPiece: React.FC<GenericChessPieceProps> = ({ gameId, piece, size, id, coords, moveIndex = -1, capturingPieceCoords, disabled = false, isLegal = false, whiteColor = "#F4F7FA", blackColor = "#34364C" }) => {
     const useChessStore = subscribeToGameStore(gameId);
     const makeMove = useChessStore(pieceSelector);
-    const { setNodeRef, attributes: { role, tabIndex }, listeners, transform, isDragging } = useDraggable({ id: id, disabled, data: { piece, coords } });
+    const { setNodeRef, attributes: { role, tabIndex }, listeners, transform, isDragging } = useDraggable({ id: id, disabled, data: { coords } });
     const { setNodeRef: setDroppable } = useDroppable({ id: id, disabled: !isLegal, data: { moveIndex, newCoords: coords } });
     const style = useMemo(() => ({ transform: CSS.Transform.toString(transform) }), [transform]);
     return (

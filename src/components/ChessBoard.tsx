@@ -5,7 +5,6 @@ import { z } from "zod";
 import { socket } from "~/server/gameServer";
 import ChessPiece, { GenericPiece } from "./ChessPiece";
 import { Dot } from "~/assets/Dot";
-import { isPieceNotation } from "~/utils/PieceNotation";
 import { boardSelector, subscribeToGameStore } from "~/stores/gameStore";
 
 type ChessBoardProps = {
@@ -35,11 +34,9 @@ export const ChessBoard: React.FC<ChessBoardProps> = memo(function ChessBoard({ 
     }, [boardDefault]);
 
     return (
-        <>
-            <InteractiveBoard gameId={gameId} size={size} playerBoardRanks={playerBoardRanks} playerBoardFiles={playerBoardFiles}>
-                <TileBoard ranks={playerBoardRanks} files={playerBoardFiles} size={size} />
-            </InteractiveBoard>
-        </>
+        <InteractiveBoard gameId={gameId} size={size} playerBoardRanks={playerBoardRanks} playerBoardFiles={playerBoardFiles}>
+            <TileBoard ranks={playerBoardRanks} files={playerBoardFiles} size={size} />
+        </InteractiveBoard>
     );
 });
 
@@ -73,18 +70,9 @@ const InteractiveBoard: React.FC<ChessBoardProps & { playerBoardRanks: number[],
 
     function onDragEnd(event: DragEndEvent) {
         if (!event.over) return;
-        try {
-            const { coords: oldCoords, piece } = z.object({ coords: z.string(), piece: z.string() }).parse(event.active.data.current);
-            const { moveIndex, newCoords } = z.object({ moveIndex: z.number(), newCoords: z.string() }).parse(event.over.data.current);
-            if (!isPieceNotation(piece)) throw new z.ZodError([{ code: z.ZodIssueCode.invalid_string, message: "Invalid piece notation", path: ["piece"], validation: "cuid" }]);
-            makeMove(moveIndex, oldCoords, newCoords, socket);
-        } catch (error) {
-            if (error instanceof z.ZodError) {
-                socket.emit("error", { error: error.issues.map((issue) => ({ message: issue.message, path: issue.path })) });
-                return;
-            }
-            socket.emit("error", { message: "unknown error", error: error });
-        }
+        const { coords: oldCoords } = z.object({ coords: z.string() }).parse(event.active.data.current);
+        const { moveIndex, newCoords } = z.object({ moveIndex: z.number(), newCoords: z.string() }).parse(event.over.data.current);
+        makeMove(moveIndex, oldCoords, newCoords, socket);
     }
 
     function onDragStart(event: DragStartEvent) {
@@ -130,7 +118,7 @@ const InteractiveBoard: React.FC<ChessBoardProps & { playerBoardRanks: number[],
                             }
                             return (
                                 <EmptyTile key={tileId} size={size} >
-                                    {isLegal && <Dot gameId={gameId} capturingPiece={capturingPieceCoords} coords={`${file}/${rank}`} moveIndex={moveIndex} id={tileId} size={size} />}
+                                    {isLegal && <Dot gameId={gameId} capturingPieceCoords={capturingPieceCoords} coords={`${file}/${rank}`} moveIndex={moveIndex} id={tileId} size={size} />}
                                 </EmptyTile>
                             );
                         });
