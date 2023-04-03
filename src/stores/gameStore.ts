@@ -2,7 +2,7 @@ import { type Socket } from "socket.io-client";
 import { z } from "zod";
 import { create, type UseBoundStore, type StateCreator, type StoreApi } from "zustand";
 import { type PromoteData } from "~/components/ChessBoard";
-import { isPieceNotation, type PieceCoordinates, type PieceNotation } from "~/utils/PieceNotation";
+import { isPieceNotation, PieceCoordinates } from "~/utils/PieceNotation";
 
 type ChessState = {
     pieceMap: PieceCoordinates,
@@ -34,7 +34,7 @@ export function subscribeToGameStore(gameId: string) {
 
 function setupChessStore(gameId: string): StateCreator<ChessState, [], []> {
     return (set, get) => ({
-        pieceMap: new Map<string, PieceNotation>(),
+        pieceMap: new PieceCoordinates(),
         pieceLegalMoves: [],
         allLegalMoves: [],
         gameId,
@@ -112,7 +112,7 @@ const successSocketMessageSchema = z.object({
 
 
 function getCoordsFromPosition(position = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", boardRanks = [1, 2, 3, 4, 5, 6, 7, 8], boardFiles = ["a", "b", "c", "d", "e", "f", "g", "h"]): PieceCoordinates {
-    const pieceMap = new Map<string, PieceNotation>();
+    const pieceMap = new PieceCoordinates();
     let rank = 7;
     let file = 0;
     let positionDone = false;
