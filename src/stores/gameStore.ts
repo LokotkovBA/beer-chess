@@ -5,10 +5,9 @@ import { type PromoteData } from "~/components/ChessBoard";
 import { isPieceNotation, PieceCoordinates } from "~/utils/PieceNotation";
 
 type ChessState = {
-    pieceMap: PieceCoordinates,
+    pieceMap: PieceCoordinates | null,
     pieceLegalMoves: string[][], //legal moves of current piece
     allLegalMoves: string[][],
-    gameId: string,
     promoteData: PromoteData[],
     showPromotionMenu: boolean,
     whiteTurn: boolean,
@@ -32,12 +31,31 @@ export function subscribeToGameStore(gameId: string) {
     return newGameStore;
 }
 
+export function boardSelector(state: ChessState) { //selector for the entire board
+    return {
+        allLegalMoves: state.allLegalMoves,
+        pieceMap: state.pieceMap,
+        pieceLegalMoves: state.pieceLegalMoves,
+        showPromotionMenu: state.showPromotionMenu,
+        whiteTurn: state.whiteTurn,
+        promoteData: state.promoteData,
+        setPieceLegalMoves: state.setPieceLegalMoves,
+        makeMove: state.makeMove,
+        setShowPromotionMenu: state.setShowPromotionMenu,
+        subscribeToMoves: state.subscribeToMoves,
+        unsubscribeFromMoves: state.unsubscribeFromMoves,
+    };
+}
+
+export function pieceSelector(state: ChessState) { //selector for a piece
+    return state.makeMove;
+}
+
 function setupChessStore(gameId: string): StateCreator<ChessState, [], []> {
     return (set, get) => ({
-        pieceMap: new PieceCoordinates(),
+        pieceMap: null,
         pieceLegalMoves: [],
         allLegalMoves: [],
-        gameId,
         promoteData: [],
         showPromotionMenu: false,
         whiteTurn: false,
@@ -46,16 +64,16 @@ function setupChessStore(gameId: string): StateCreator<ChessState, [], []> {
         setPromoteData: (promoteData) => set(state => ({ ...state, promoteData })),
         setPieceLegalMoves: (legalMoves) => set(state => ({ ...state, pieceLegalMoves: legalMoves })),
         movePiece: (oldCoords, newCoords) => {
-            const { pieceMap } = get();
-            const piece = pieceMap.get(oldCoords);
+            const pieceMap = structuredClone(get().pieceMap);
+            const piece = pieceMap?.get(oldCoords);
             if (piece) {
-                pieceMap.delete(oldCoords);
-                pieceMap.set(newCoords, piece);
+                pieceMap?.delete(oldCoords);
+                pieceMap?.set(newCoords, piece);
             }
             set(state => ({ ...state, pieceMap }));
         },
         makeMove: (moveIndex, oldCoords, newCoords, socket) => {
-            const { pieceLegalMoves, gameId, allLegalMoves, setPieceLegalMoves, setShowPromotionMenu, setPromoteData, movePiece } = get();
+            const { pieceLegalMoves, allLegalMoves, setPieceLegalMoves, setShowPromotionMenu, setPromoteData, movePiece } = get();
             let promoteData: PromoteData[];
             const currentMove = pieceLegalMoves[moveIndex];
             if (currentMove) {
@@ -83,7 +101,6 @@ function setupChessStore(gameId: string): StateCreator<ChessState, [], []> {
             setPieceLegalMoves([]);
         },
         subscribeToMoves: (socket) => {
-            const { gameId } = get();
             socket.on(`${gameId} success`, (message) => {
                 console.log(message);
                 const { legalMoves: newLegalMoves, turn, position: newPosition } = successSocketMessageSchema.parse(message);
@@ -102,23 +119,20 @@ function setupChessStore(gameId: string): StateCreator<ChessState, [], []> {
     });
 }
 
-
-
 const successSocketMessageSchema = z.object({
     legalMoves: z.array(z.string()),
     turn: z.union([z.literal("w"), z.literal("b")]),
     position: z.string()
 });
 
-
-function getCoordsFromPosition(position = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", boardRanks = [1, 2, 3, 4, 5, 6, 7, 8], boardFiles = ["a", "b", "c", "d", "e", "f", "g", "h"]): PieceCoordinates {
+function getCoordsFromPosition(position = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", boardRanks = [1, 2, 3, 4, 5, 6, 7, 8], boardFiles = ["a", "b", "c", "d", "e", "f", "g", "h"]) {
     const pieceMap = new PieceCoordinates();
     let rank = 7;
     let file = 0;
     let positionDone = false;
     let index = 0;
     while (!positionDone && index < position.length) {
-        const char = position[index] as string;
+        const char = position[index];
         index++;
         switch (char) {
             case " ":
@@ -134,7 +148,7 @@ function getCoordsFromPosition(position = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RN
                 if (isPieceNotation(char) && curRank && curFile) {
                     pieceMap.set(`${curFile}/${curRank}`, char);
                     file++;
-                } else {
+                } else if (char) {
                     let numOfEmpty = parseInt(char);
                     while (numOfEmpty > 0) {
                         file++;

@@ -1,8 +1,8 @@
 import { useDraggable, useDroppable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
-import React, { memo, useCallback, useMemo } from "react";
+import React, { memo, useMemo } from "react";
 import { socket } from "~/server/gameServer";
-import { subscribeToGameStore } from "~/stores/gameStore";
+import { pieceSelector, subscribeToGameStore } from "~/stores/gameStore";
 import { type PieceNotation } from "~/utils/PieceNotation";
 
 type GenericChessPieceProps = {
@@ -28,7 +28,7 @@ function getPieceColors(isWhite: boolean, whiteColor: string, blackColor: string
 
 const ChessPiece: React.FC<GenericChessPieceProps> = ({ gameId, piece, size, id, coords, moveIndex = -1, capturingPieceCoords, disabled = false, isLegal = false, whiteColor = "#F4F7FA", blackColor = "#34364C" }) => {
     const useChessStore = subscribeToGameStore(gameId);
-    const makeMove = useChessStore(useCallback(state => state.makeMove, []));
+    const makeMove = useChessStore(pieceSelector);
     const { setNodeRef, attributes: { role, tabIndex }, listeners, transform, isDragging } = useDraggable({ id: id, disabled, data: { piece, coords } });
     const { setNodeRef: setDroppable } = useDroppable({ id: id, disabled: !isLegal, data: { moveIndex, newCoords: coords } });
     const style = useMemo(() => ({ transform: CSS.Transform.toString(transform) }), [transform]);

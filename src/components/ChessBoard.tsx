@@ -1,12 +1,12 @@
 import { DndContext } from "@dnd-kit/core";
 import { type DragStartEvent, type DragEndEvent } from "@dnd-kit/core/dist/types";
-import React, { memo, type PropsWithChildren, useMemo, useEffect, useCallback } from "react";
+import React, { memo, type PropsWithChildren, useMemo, useEffect } from "react";
 import { z } from "zod";
 import { socket } from "~/server/gameServer";
 import ChessPiece, { GenericPiece } from "./ChessPiece";
 import { Dot } from "~/assets/Dot";
 import { isPieceNotation } from "~/utils/PieceNotation";
-import { subscribeToGameStore } from "~/stores/gameStore";
+import { boardSelector, subscribeToGameStore } from "~/stores/gameStore";
 
 type ChessBoardProps = {
     size: string;
@@ -56,19 +56,7 @@ const InteractiveBoard: React.FC<ChessBoardProps & { playerBoardRanks: number[],
         setPieceLegalMoves,
         subscribeToMoves,
         unsubscribeFromMoves
-    } = useChessStore(useCallback(state => ({
-        allLegalMoves: state.allLegalMoves,
-        pieceMap: state.pieceMap,
-        pieceLegalMoves: state.pieceLegalMoves,
-        showPromotionMenu: state.showPromotionMenu,
-        whiteTurn: state.whiteTurn,
-        promoteData: state.promoteData,
-        setPieceLegalMoves: state.setPieceLegalMoves,
-        makeMove: state.makeMove,
-        setShowPromotionMenu: state.setShowPromotionMenu,
-        subscribeToMoves: state.subscribeToMoves,
-        unsubscribeFromMoves: state.unsubscribeFromMoves,
-    }), [])); //
+    } = useChessStore(boardSelector);
     // const [playerIsWhite, setPlayerIsWhite] = useState(true);  // set when player joins
     useEffect(() => {
         socket.emit("join game", ({ gameId }));
@@ -111,7 +99,7 @@ const InteractiveBoard: React.FC<ChessBoardProps & { playerBoardRanks: number[],
                 <div className="chess-board chess-board--pieces">
                     {playerBoardRanks.map((rank) => {
                         const files = playerBoardFiles.map((file) => {
-                            const curPiece = pieceMap.get(`${file}/${rank}`);
+                            const curPiece = pieceMap?.get(`${file}/${rank}`);
                             const tileId = `${file}/${rank}`;
                             let moveIndex = -1;
                             let capturingPieceCoords = "";

@@ -1,7 +1,7 @@
 import { useDroppable } from "@dnd-kit/core";
-import React, { useCallback } from "react";
+import React from "react";
 import { socket } from "~/server/gameServer";
-import { subscribeToGameStore } from "~/stores/gameStore";
+import { pieceSelector, subscribeToGameStore } from "~/stores/gameStore";
 
 
 interface DotProps {
@@ -17,7 +17,7 @@ interface DotProps {
 export const Dot: React.FC<DotProps> = ({ size, blackColor = "#34364C", id, moveIndex, coords, capturingPiece, gameId }) => {
     const { setNodeRef } = useDroppable({ id: id, data: { moveIndex, newCoords: coords } });
     const useChessStore = subscribeToGameStore(gameId);
-    const makeMove = useChessStore(useCallback(state => state.makeMove, []));
+    const makeMove = useChessStore(pieceSelector);
     return (
         <div onClick={() => makeMove(moveIndex, capturingPiece, coords, socket)} className="chess-piece--capture" ref={setNodeRef}>
             <svg width={size} height={size} viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
