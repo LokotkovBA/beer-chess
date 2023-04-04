@@ -16,7 +16,7 @@ export function boardSelector(state: ChessState) { //selector for the entire boa
     } as const;
 }
 export function timerSelector(state: ChessState) {
-    return [state.timeLeftWhite, state.timeLeftBlack, state.whiteTurn, state.gameStatus, state.decrementTimer] as const;
+    return [state.timeLeftWhite, state.timeLeftBlack, state.whiteTurn, state.gameStatus] as const;
 }
 
 export function pieceSelector(state: ChessState) { //selector for a piece

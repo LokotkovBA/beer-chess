@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { timerSelector } from "~/stores/game/selectors";
 import { subscribeToGameStore } from "~/stores/game/store";
 
@@ -17,26 +17,36 @@ export const GameTimer: React.FC<GameTimerProps> = ({ gameId }) => {
         timeLeftWhite,
         timeLeftBlack,
         whiteTurn,
-        gameStatus,
-        decrementTimer
+        gameStatus
     ] = useChessStore(timerSelector);
     const intervalRef = useRef<ReturnType<typeof setInterval>>();
+    const [curTimeLeftWhite, setCurTimeLeftWhite] = useState(timeLeftWhite);
+    const [curTimeLeftBlack, setCutTimeLeftBlack] = useState(timeLeftBlack);
+
+    useEffect(() => {
+        setCurTimeLeftWhite(timeLeftWhite);
+    }, [timeLeftWhite]);
+
+    useEffect(() => {
+        setCutTimeLeftBlack(timeLeftBlack);
+    }, [timeLeftBlack]);
 
     useEffect(() => {
         if (gameStatus === "STARTED") {
             intervalRef.current = setInterval(() => {
-                decrementTimer();
+                setCurTimeLeftWhite(timeLeft => timeLeft - (whiteTurn ? 1000 : 0));
+                setCutTimeLeftBlack(timeLeft => timeLeft - (whiteTurn ? 0 : 1000));
             }, 1000);
         }
         return () => {
             clearInterval(intervalRef.current);
         };
-    }, [whiteTurn, decrementTimer, gameStatus]);
+    }, [whiteTurn, gameStatus]);
 
     return (
         <div>
-            <h2>{parseTime(timeLeftBlack)}</h2>
-            <h2>{parseTime(timeLeftWhite)}</h2>
+            <h2>{parseTime(curTimeLeftBlack)}</h2>
+            <h2>{parseTime(curTimeLeftWhite)}</h2>
         </div>
     );
 };
