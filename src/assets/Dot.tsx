@@ -1,7 +1,8 @@
 import { useDroppable } from "@dnd-kit/core";
 import React from "react";
 import { socket } from "~/server/gameServer";
-import { pieceSelector, subscribeToGameStore } from "~/stores/gameStore";
+import { pieceSelector } from "~/stores/game/selectors";
+import { subscribeToGameStore } from "~/stores/game/store";
 
 
 interface DotProps {

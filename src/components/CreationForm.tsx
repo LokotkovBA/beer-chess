@@ -37,13 +37,13 @@ export const CreationForm: React.FC<{ roomId: string }> = ({ roomId }) => {
     function onSubmit(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
         if (isReady && isWhite.current && inviteeUsername.current?.value) {
-            createGame({ roomId: roomId, timeRule: "-1", isWhite: isWhite.current.checked, inviteeUsername: inviteeUsername.current.value });
+            createGame({ roomId: roomId, timeRule: "-1/-1", isWhite: isWhite.current.checked, inviteeUsername: inviteeUsername.current.value });
         }
     }
 
     return (
         <form method="submit" onSubmit={onSubmit}>
-            <button onClick={() => socket.emit("start game", { gameId: roomId, gameTitle: "kek", playerWhite: "shmeck", playerBlack: "kekw" })}>Debug start</button>
+            <button onClick={() => socket.emit("start game", { gameId: roomId, gameTitle: "kek", playerWhite: "shmeck", playerBlack: "kekw", timeRule: "1/3" })}>Debug start</button> {/*todo: time rule */}
             <input ref={inviteeUsername} placeholder="Имя оппонента" type="text" />
             <button type="button" onClick={() => socket.emit("send invite", { roomId, uniqueName: inviteeUsername.current?.value, name: sessionData?.user.name })}>Отправить приглашение</button>
             <fieldset>

@@ -9,6 +9,7 @@ import { useSession } from "next-auth/react";
 import { CreationForm } from "~/components/CreationForm";
 import { type Session } from "next-auth";
 import styles from "./[id].module.scss";
+import { GameTimer } from "~/components/GameTimer";
 
 const RoomPage: NextPage<{ roomId: string, session: Session | null }> = ({ roomId }) => {
     const { data: roomData } = api.rooms.get.useQuery({ roomId });
@@ -41,6 +42,7 @@ const RoomPage: NextPage<{ roomId: string, session: Session | null }> = ({ roomI
                     (sessionData?.user.name) && (roomData.inviteeUsername === sessionData?.user.uniqueName || !roomData.inviteeUsername) &&
                     <ReadyForm roomId={roomId} creatorName={roomData.creatorUsername} name={sessionData?.user.name} />
                 }
+                <GameTimer gameId={roomId} />
                 <ChessBoard size={"5rem"} boardDefault={true} gameId={roomId} />
             </div>
         </>

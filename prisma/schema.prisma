@@ -116,7 +116,8 @@ model Game {
 
 enum GameStatus {
     INITIALIZING
-    PLAYING
+    FM
+    STARTED
     TIE
     BLACKWON
     WHITEWON

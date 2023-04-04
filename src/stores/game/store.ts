@@ -1,25 +1,9 @@
-import { type Socket } from "socket.io-client";
 import { z } from "zod";
 import { create, type UseBoundStore, type StateCreator, type StoreApi } from "zustand";
 import { type PromoteData } from "~/components/ChessBoard";
 import { isPieceNotation, PieceCoordinates } from "~/utils/PieceNotation";
+import { isPositionStatus, type ChessState, isGameStatus } from "./types";
 
-type ChessState = {
-    pieceMap: PieceCoordinates | null,
-    pieceLegalMoves: string[][], //legal moves of current piece
-    allLegalMoves: string[][],
-    promoteData: PromoteData[],
-    showPromotionMenu: boolean,
-    whiteTurn: boolean,
-    setGameId: (gameId: string) => void,
-    setShowPromotionMenu: (show: boolean) => void,
-    setPromoteData: (promoteData: PromoteData[]) => void,
-    setPieceLegalMoves: (legalMoves: string[][]) => void,
-    movePiece: (oldCoords: string, newCoords: string) => void,
-    makeMove: (moveIndex: number, oldCoords: string, newCoords: string, socket: Socket) => void,
-    subscribeToMoves: (socket: Socket, gameId: string) => void
-    unsubscribeFromMoves: (socket: Socket, gameId: string) => void
-}
 
 const gamesStoreMap = new Map<string, UseBoundStore<StoreApi<ChessState>>>();
 
@@ -31,26 +15,6 @@ export function subscribeToGameStore(gameId: string) {
     return newGameStore;
 }
 
-export function boardSelector(state: ChessState) { //selector for the entire board
-    return {
-        allLegalMoves: state.allLegalMoves,
-        pieceMap: state.pieceMap,
-        pieceLegalMoves: state.pieceLegalMoves,
-        showPromotionMenu: state.showPromotionMenu,
-        whiteTurn: state.whiteTurn,
-        promoteData: state.promoteData,
-        setPieceLegalMoves: state.setPieceLegalMoves,
-        makeMove: state.makeMove,
-        setShowPromotionMenu: state.setShowPromotionMenu,
-        subscribeToMoves: state.subscribeToMoves,
-        unsubscribeFromMoves: state.unsubscribeFromMoves,
-    };
-}
-
-export function pieceSelector(state: ChessState) { //selector for a piece
-    return state.makeMove;
-}
-
 function setupChessStore(gameId: string): StateCreator<ChessState, [], []> {
     return (set, get) => ({
         pieceMap: null,
@@ -59,6 +23,14 @@ function setupChessStore(gameId: string): StateCreator<ChessState, [], []> {
         promoteData: [],
         showPromotionMenu: false,
         whiteTurn: false,
+        timeLeftWhite: 0,
+        timeLeftBlack: 0,
+        gameStatus: "INITIALIZING",
+        positionStatus: "PLAYABLE",
+        canMove: () => {
+            const gameStatus = get().gameStatus;
+            return gameStatus === "STARTED" || gameStatus === "INITIALIZING" || gameStatus === "FM";
+        },
         setGameId: (gameId) => set(state => ({ ...state, gameId: gameId })),
         setShowPromotionMenu: (show) => set(state => ({ ...state, showPromotionMenu: show })),
         setPromoteData: (promoteData) => set(state => ({ ...state, promoteData })),
@@ -73,7 +45,8 @@ function setupChessStore(gameId: string): StateCreator<ChessState, [], []> {
             set(state => ({ ...state, pieceMap }));
         },
         makeMove: (moveIndex, oldCoords, newCoords, socket) => {
-            const { pieceLegalMoves, allLegalMoves, setPieceLegalMoves, setShowPromotionMenu, setPromoteData, movePiece } = get();
+            const { pieceLegalMoves, allLegalMoves, canMove, setPieceLegalMoves, setShowPromotionMenu, setPromoteData, movePiece } = get();
+            if (!canMove()) return;
             let promoteData: PromoteData[];
             const currentMove = pieceLegalMoves[moveIndex];
             if (currentMove) {
@@ -101,11 +74,25 @@ function setupChessStore(gameId: string): StateCreator<ChessState, [], []> {
             setPieceLegalMoves([]);
         },
         subscribeToMoves: (socket) => {
-            socket.on(`${gameId} success`, (message) => {
+            socket.on(`${gameId} success`, (message: { remainingWhiteTime: number, remainingBlackTime: number, turn: string }) => {
                 console.log(message);
-                const { legalMoves: newLegalMoves, turn, position: newPosition } = successSocketMessageSchema.parse(message);
+                const {
+                    legalMoves: newLegalMoves,
+                    position: newPosition,
+                    turn,
+                    gameStatus,
+                    positionStatus,
+                    remainingBlackTime,
+                    remainingWhiteTime
+                } = successSocketMessageSchema.parse(message);
+                if (!isPositionStatus(positionStatus)) return socket.emit("error", ({ message: "Incorrect position status" }));
+                if (!isGameStatus(gameStatus)) return socket.emit("error", ({ message: "Incorrect game status" }));
                 set(state => ({
                     ...state,
+                    gameStatus,
+                    positionStatus,
+                    timeLeftWhite: remainingWhiteTime,
+                    timeLeftBlack: remainingBlackTime,
                     allLegalMoves: newLegalMoves.map((move) => move.split("/")),
                     whiteTurn: turn === "w",
                     pieceMap: getCoordsFromPosition(newPosition),
@@ -115,11 +102,26 @@ function setupChessStore(gameId: string): StateCreator<ChessState, [], []> {
         },
         unsubscribeFromMoves: (socket, gameId) => {
             socket.off(`${gameId} success`);
+        },
+        decrementTimer: () => {
+            const { whiteTurn } = get();
+            let { timeLeftWhite, timeLeftBlack } = get();
+            timeLeftWhite -= whiteTurn ? 1000 : 0;
+            timeLeftBlack -= whiteTurn ? 0 : 1000;
+            set(state => ({
+                ...state,
+                timeLeftWhite,
+                timeLeftBlack
+            }));
         }
     });
 }
 
 const successSocketMessageSchema = z.object({
+    gameStatus: z.string(),
+    positionStatus: z.string(),
+    remainingWhiteTime: z.number(),
+    remainingBlackTime: z.number(),
     legalMoves: z.array(z.string()),
     turn: z.union([z.literal("w"), z.literal("b")]),
     position: z.string()

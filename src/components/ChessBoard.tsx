@@ -5,7 +5,8 @@ import { z } from "zod";
 import { socket } from "~/server/gameServer";
 import ChessPiece, { GenericPiece } from "./ChessPiece";
 import { Dot } from "~/assets/Dot";
-import { boardSelector, subscribeToGameStore } from "~/stores/gameStore";
+import { subscribeToGameStore } from "~/stores/game/store";
+import { boardSelector } from "~/stores/game/selectors";
 
 type ChessBoardProps = {
     size: string;
@@ -49,12 +50,12 @@ const InteractiveBoard: React.FC<ChessBoardProps & { playerBoardRanks: number[],
         showPromotionMenu,
         whiteTurn,
         promoteData,
+        canMove,
         makeMove,
         setPieceLegalMoves,
         subscribeToMoves,
         unsubscribeFromMoves
     } = useChessStore(boardSelector);
-    // const [playerIsWhite, setPlayerIsWhite] = useState(true);  // set when player joins
     useEffect(() => {
         socket.emit("join game", ({ gameId }));
         return () => {
@@ -76,6 +77,7 @@ const InteractiveBoard: React.FC<ChessBoardProps & { playerBoardRanks: number[],
     }
 
     function onDragStart(event: DragStartEvent) {
+        if (!canMove()) return;
         let { coords } = event.active.data.current as { coords: string };
         coords = coords.replace("/", "");
         setPieceLegalMoves(allLegalMoves.filter((move) => move[0]?.includes(coords)));

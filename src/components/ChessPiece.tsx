@@ -2,7 +2,8 @@ import { useDraggable, useDroppable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import React, { memo, useMemo } from "react";
 import { socket } from "~/server/gameServer";
-import { pieceSelector, subscribeToGameStore } from "~/stores/gameStore";
+import { pieceSelector } from "~/stores/game/selectors";
+import { subscribeToGameStore } from "~/stores/game/store";
 import { type PieceNotation } from "~/utils/PieceNotation";
 
 type GenericChessPieceProps = {
