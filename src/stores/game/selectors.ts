@@ -8,6 +8,8 @@ export function boardSelector(state: ChessState) { //selector for the entire boa
         showPromotionMenu: state.showPromotionMenu,
         whiteTurn: state.whiteTurn,
         promoteData: state.promoteData,
+        lastMoveFrom: state.lastMoveFrom,
+        lastMoveTo: state.lastMoveTo,
         canMove: state.canMove,
         setPieceLegalMoves: state.setPieceLegalMoves,
         makeMove: state.makeMove,

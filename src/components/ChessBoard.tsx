@@ -50,6 +50,8 @@ const InteractiveBoard: React.FC<ChessBoardProps & { playerBoardRanks: number[],
         showPromotionMenu,
         whiteTurn,
         promoteData,
+        lastMoveFrom,
+        lastMoveTo,
         canMove,
         makeMove,
         setPieceLegalMoves,
@@ -78,7 +80,7 @@ const InteractiveBoard: React.FC<ChessBoardProps & { playerBoardRanks: number[],
 
     function onDragStart(event: DragStartEvent) {
         if (!canMove()) return;
-        let { coords } = event.active.data.current as { coords: string };
+        let { coords } = z.object({ coords: z.string() }).parse(event.active.data.current);
         coords = coords.replace("/", "");
         setPieceLegalMoves(allLegalMoves.filter((move) => move[0]?.includes(coords)));
     }
@@ -90,7 +92,8 @@ const InteractiveBoard: React.FC<ChessBoardProps & { playerBoardRanks: number[],
                     {playerBoardRanks.map((rank) => {
                         const files = playerBoardFiles.map((file) => {
                             const curPiece = pieceMap?.get(`${file}/${rank}`);
-                            const tileId = `${file}/${rank}`;
+                            const tileId = `${file}${rank}`;
+                            const isLastMove = tileId === lastMoveFrom || tileId === lastMoveTo;
                             let moveIndex = -1;
                             let capturingPieceCoords = "";
                             const isLegal = pieceLegalMoves.reduce((prevIsLegal, elem, index) => {
@@ -105,7 +108,7 @@ const InteractiveBoard: React.FC<ChessBoardProps & { playerBoardRanks: number[],
                                 const disabled = !((whiteTurn && curPiece.toUpperCase() === curPiece) || (!whiteTurn && curPiece.toLowerCase() === curPiece));
                                 const pieceId = `${curPiece}${file}${rank}`;
                                 return (
-                                    <EmptyTile key={tileId} size={size} isLegal={isLegal}>
+                                    <EmptyTile isLastMove={isLastMove} key={tileId} size={size} isLegal={isLegal}>
                                         <ChessPiece gameId={gameId}
                                             capturingPieceCoords={capturingPieceCoords}
                                             moveIndex={moveIndex}
@@ -119,7 +122,7 @@ const InteractiveBoard: React.FC<ChessBoardProps & { playerBoardRanks: number[],
                                 );
                             }
                             return (
-                                <EmptyTile key={tileId} size={size} >
+                                <EmptyTile isLastMove={isLastMove} key={tileId} size={size} >
                                     {isLegal && <Dot gameId={gameId} capturingPieceCoords={capturingPieceCoords} coords={`${file}/${rank}`} moveIndex={moveIndex} id={tileId} size={size} />}
                                 </EmptyTile>
                             );
@@ -136,6 +139,7 @@ const InteractiveBoard: React.FC<ChessBoardProps & { playerBoardRanks: number[],
 type TileColor = "white" | "black" | "selected";
 
 type TileProps = {
+    isLastMove?: boolean,
     color?: TileColor;
     size: string;
     isLegal?: boolean;
@@ -145,9 +149,9 @@ const Tile: React.FC<TileProps> = ({ color = "black", size }) => {
     return <div style={{ minWidth: size, height: size }} className={`chess-tile chess-tile--${color}`} />;
 };
 
-const EmptyTile: React.FC<TileProps & PropsWithChildren> = ({ size, isLegal = false, children }) => {
+const EmptyTile: React.FC<TileProps & PropsWithChildren> = ({ size, isLegal = false, children, isLastMove }) => {
     return (
-        <div style={{ minWidth: size, height: size }} className={`chess-tile ${(children && isLegal) ? " chess-tile--capture" : ""}`} >
+        <div style={{ minWidth: size, height: size }} className={`chess-tile${isLastMove ? " chess-tile--last-move" : ""}${(children && isLegal) ? " chess-tile--capture" : ""}`} >
             {children}
         </div>
     );

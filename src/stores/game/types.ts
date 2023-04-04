@@ -17,6 +17,8 @@ export type ChessState = {
     timeLeftBlack: number,
     gameStatus: GameStatus,
     positionStatus: PositionStatus,
+    lastMoveFrom: string,
+    lastMoveTo: string,
     canMove: () => boolean,
     setGameId: (gameId: string) => void,
     setShowPromotionMenu: (show: boolean) => void,
@@ -26,7 +28,6 @@ export type ChessState = {
     makeMove: (moveIndex: number, oldCoords: string, newCoords: string, socket: Socket) => void,
     subscribeToMoves: (socket: Socket, gameId: string) => void,
     unsubscribeFromMoves: (socket: Socket, gameId: string) => void,
-    decrementTimer: () => void,
 }
 
 const positionStatusValues = ["PLAYABLE", "STALEMATE", "CHECK", "CHECKMATE", "DEAD", "ERROR"];

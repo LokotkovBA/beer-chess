@@ -26,8 +26,8 @@
         background-color: #F0D9B5;
     }
 
-    &--selected {
-        filter: hue-rotate(60deg);
+    &--last-move {
+        background-color: rgba(16, 129, 21, 0.61);
     }
 
     &--capture {

@@ -25,6 +25,8 @@ function setupChessStore(gameId: string): StateCreator<ChessState, [], []> {
         whiteTurn: false,
         timeLeftWhite: 0,
         timeLeftBlack: 0,
+        lastMoveFrom: "",
+        lastMoveTo: "",
         gameStatus: "INITIALIZING",
         positionStatus: "PLAYABLE",
         canMove: () => {
@@ -74,11 +76,13 @@ function setupChessStore(gameId: string): StateCreator<ChessState, [], []> {
             setPieceLegalMoves([]);
         },
         subscribeToMoves: (socket) => {
-            socket.on(`${gameId} success`, (message: { remainingWhiteTime: number, remainingBlackTime: number, turn: string }) => {
+            socket.on(`${gameId} success`, (message) => {
                 console.log(message);
                 const {
                     legalMoves: newLegalMoves,
                     position: newPosition,
+                    lastMoveFrom,
+                    lastMoveTo,
                     turn,
                     gameStatus,
                     positionStatus,
@@ -91,6 +95,8 @@ function setupChessStore(gameId: string): StateCreator<ChessState, [], []> {
                     ...state,
                     gameStatus,
                     positionStatus,
+                    lastMoveFrom,
+                    lastMoveTo,
                     timeLeftWhite: remainingWhiteTime,
                     timeLeftBlack: remainingBlackTime,
                     allLegalMoves: newLegalMoves.map((move) => move.split("/")),
@@ -103,23 +109,14 @@ function setupChessStore(gameId: string): StateCreator<ChessState, [], []> {
         unsubscribeFromMoves: (socket, gameId) => {
             socket.off(`${gameId} success`);
         },
-        decrementTimer: () => {
-            const { whiteTurn } = get();
-            let { timeLeftWhite, timeLeftBlack } = get();
-            timeLeftWhite -= whiteTurn ? 1000 : 0;
-            timeLeftBlack -= whiteTurn ? 0 : 1000;
-            set(state => ({
-                ...state,
-                timeLeftWhite,
-                timeLeftBlack
-            }));
-        }
     });
 }
 
 const successSocketMessageSchema = z.object({
     gameStatus: z.string(),
     positionStatus: z.string(),
+    lastMoveFrom: z.string(),
+    lastMoveTo: z.string(),
     remainingWhiteTime: z.number(),
     remainingBlackTime: z.number(),
     legalMoves: z.array(z.string()),
