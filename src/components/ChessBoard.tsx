@@ -80,8 +80,7 @@ const InteractiveBoard: React.FC<ChessBoardProps & { playerBoardRanks: number[],
 
     function onDragStart(event: DragStartEvent) {
         if (!canMove()) return;
-        let { coords } = z.object({ coords: z.string() }).parse(event.active.data.current);
-        coords = coords.replace("/", "");
+        const { coords } = z.object({ coords: z.string() }).parse(event.active.data.current);
         setPieceLegalMoves(allLegalMoves.filter((move) => move[0]?.includes(coords)));
     }
     return (
@@ -91,15 +90,15 @@ const InteractiveBoard: React.FC<ChessBoardProps & { playerBoardRanks: number[],
                 <div className="chess-board chess-board--pieces">
                     {playerBoardRanks.map((rank) => {
                         const files = playerBoardFiles.map((file) => {
-                            const curPiece = pieceMap?.get(`${file}/${rank}`);
                             const tileId = `${file}${rank}`;
+                            const curPiece = pieceMap?.get(tileId);
                             const isLastMove = tileId === lastMoveFrom || tileId === lastMoveTo;
                             let moveIndex = -1;
                             let capturingPieceCoords = "";
                             const isLegal = pieceLegalMoves.reduce((prevIsLegal, elem, index) => {
                                 if (elem[0]?.slice(2).includes(`${file}${rank}`)) {
                                     moveIndex = index;
-                                    capturingPieceCoords = elem[0].slice(0, -2);
+                                    capturingPieceCoords = elem[0].slice(0, 2);
                                     return true;
                                 }
                                 return prevIsLegal;
@@ -113,7 +112,7 @@ const InteractiveBoard: React.FC<ChessBoardProps & { playerBoardRanks: number[],
                                             capturingPieceCoords={capturingPieceCoords}
                                             moveIndex={moveIndex}
                                             isLegal={isLegal}
-                                            coords={`${file}/${rank}`}
+                                            coords={tileId}
                                             id={pieceId}
                                             size={size}
                                             piece={curPiece}
@@ -123,7 +122,7 @@ const InteractiveBoard: React.FC<ChessBoardProps & { playerBoardRanks: number[],
                             }
                             return (
                                 <EmptyTile isLastMove={isLastMove} key={tileId} size={size} >
-                                    {isLegal && <Dot gameId={gameId} capturingPieceCoords={capturingPieceCoords} coords={`${file}/${rank}`} moveIndex={moveIndex} id={tileId} size={size} />}
+                                    {isLegal && <Dot gameId={gameId} capturingPieceCoords={capturingPieceCoords} coords={tileId} moveIndex={moveIndex} id={tileId} size={size} />}
                                 </EmptyTile>
                             );
                         });

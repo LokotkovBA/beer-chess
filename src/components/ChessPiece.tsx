@@ -1,6 +1,6 @@
 import { useDraggable, useDroppable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
-import React, { memo, useMemo } from "react";
+import React, { memo } from "react";
 import { socket } from "~/server/gameServer";
 import { pieceSelector } from "~/stores/game/selectors";
 import { subscribeToGameStore } from "~/stores/game/store";
@@ -32,9 +32,10 @@ const ChessPiece: React.FC<GenericChessPieceProps> = ({ gameId, piece, size, id,
     const makeMove = useChessStore(pieceSelector);
     const { setNodeRef, attributes: { role, tabIndex }, listeners, transform, isDragging } = useDraggable({ id: id, disabled, data: { coords } });
     const { setNodeRef: setDroppable } = useDroppable({ id: id, disabled: !isLegal, data: { moveIndex, newCoords: coords } });
-    const style = useMemo(() => ({ transform: CSS.Transform.toString(transform) }), [transform]);
     return (
-        <div onClick={() => makeMove(moveIndex, coords, capturingPieceCoords, socket)} className={`chess-piece${disabled ? "" : " chess-piece--active"}${isDragging ? " chess-piece--dragging" : ""}${isLegal ? " chess-piece--capture" : ""}`} style={style} role={role} tabIndex={tabIndex} ref={setNodeRef} {...listeners} >
+        <div onClick={() => makeMove(moveIndex, capturingPieceCoords, coords, socket)}
+            className={`chess-piece${disabled ? "" : " chess-piece--active"}${isDragging ? " chess-piece--dragging" : ""}${isLegal ? " chess-piece--capture" : ""}`}
+            style={{ transform: CSS.Transform.toString(transform) }} role={role} tabIndex={tabIndex} ref={setNodeRef} {...listeners} >
             <div ref={setDroppable}>
                 <GenericPiece size={size} piece={piece} whiteColor={whiteColor} blackColor={blackColor} />
             </div>

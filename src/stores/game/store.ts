@@ -145,7 +145,7 @@ function getCoordsFromPosition(position = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RN
                 const curFile = boardFiles[file];
                 const curRank = boardRanks[rank];
                 if (isPieceNotation(char) && curRank && curFile) {
-                    pieceMap.set(`${curFile}/${curRank}`, char);
+                    pieceMap.set(`${curFile}${curRank}`, char);
                     file++;
                 } else if (char) {
                     let numOfEmpty = parseInt(char);
