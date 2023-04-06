@@ -189,8 +189,9 @@ type PromotionMenuProps = {
 }
 export type PromoteData = { piece: string, index: string };
 const PromotionMenu: React.FC<PromotionMenuProps> = ({ size, isWhite, promoteData, gameId }) => {
+    const { data: secret } = api.games.getSecretName.useQuery();
     function selectPiece(index: string) {
-        socket.emit("move", { gameId: gameId, move: index });
+        socket.emit("move", { gameId: gameId, move: index, secretName: secret?.secretName });
     }
     return (
         <menu className="promotion-menu">
