@@ -5,6 +5,7 @@ import { socket } from "~/server/gameServer";
 import { pieceSelector } from "~/stores/game/selectors";
 import { subscribeToGameStore } from "~/stores/game/store";
 import { type PieceNotation } from "~/utils/PieceNotation";
+import { api } from "~/utils/api";
 
 type GenericChessPieceProps = {
     gameId: string,
@@ -30,10 +31,11 @@ function getPieceColors(isWhite: boolean, whiteColor: string, blackColor: string
 const ChessPiece: React.FC<GenericChessPieceProps> = ({ gameId, piece, size, id, coords, moveIndex = -1, capturingPieceCoords, disabled = false, isLegal = false, whiteColor = "#F4F7FA", blackColor = "#34364C" }) => {
     const useChessStore = subscribeToGameStore(gameId);
     const makeMove = useChessStore(pieceSelector);
+    const { data: secret } = api.games.getSecretName.useQuery();
     const { setNodeRef, attributes: { role, tabIndex }, listeners, transform, isDragging } = useDraggable({ id: id, disabled, data: { coords } });
     const { setNodeRef: setDroppable } = useDroppable({ id: id, disabled: !isLegal, data: { moveIndex, newCoords: coords } });
     return (
-        <div onClick={() => makeMove(moveIndex, capturingPieceCoords, coords, socket)}
+        <div onClick={() => secret && makeMove(moveIndex, capturingPieceCoords, coords, socket, secret.secretName)}
             className={`chess-piece${disabled ? "" : " chess-piece--active"}${isDragging ? " chess-piece--dragging" : ""}${isLegal ? " chess-piece--capture" : ""}`}
             style={{ transform: CSS.Transform.toString(transform) }} role={role} tabIndex={tabIndex} ref={setNodeRef} {...listeners} >
             <div ref={setDroppable}>

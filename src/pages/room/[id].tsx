@@ -2,7 +2,7 @@ import type { GetStaticPaths, GetStaticProps, NextPage } from "next";
 import Head from "next/head";
 import { api } from "~/utils/api";
 import { generateSSGHelper } from "~/server/helpers/ssgHelper";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { ChessBoard } from "~/components/ChessBoard";
 import { socket } from "~/server/gameServer";
 import { useSession } from "next-auth/react";
@@ -13,6 +13,7 @@ import { GameTimer } from "~/components/GameTimer";
 
 const RoomPage: NextPage<{ roomId: string, session: Session | null }> = ({ roomId }) => {
     const { data: roomData } = api.rooms.get.useQuery({ roomId });
+    const { data: gamesData } = api.games.getAll.useQuery({ roomId });
     const { data: sessionData } = useSession();
     useEffect(() => {
         if (roomData) {
@@ -42,8 +43,13 @@ const RoomPage: NextPage<{ roomId: string, session: Session | null }> = ({ roomI
                     (sessionData?.user.name) && (roomData.inviteeUsername === sessionData?.user.uniqueName || !roomData.inviteeUsername) &&
                     <ReadyForm roomId={roomId} creatorName={roomData.creatorUsername} name={sessionData?.user.name} />
                 }
-                <GameTimer gameId={roomId} />
-                <ChessBoard size={"5rem"} boardDefault={true} gameId={roomId} />
+
+                {gamesData?.map(({ id }) => (
+                    <React.Fragment key={id}>
+                        <GameTimer gameId={id} />
+                        <ChessBoard size={"5rem"} gameId={id} />
+                    </React.Fragment>
+                ))}
             </div>
         </>
     );

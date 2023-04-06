@@ -5,8 +5,8 @@ import { type PieceCoordinates } from "~/utils/PieceNotation";
 
 export type PositionStatus = "PLAYABLE" | "STALEMATE" | "CHECK" | "CHECKMATE" | "DEAD" | "ERROR";
 export type ChessState = {
-    //whitePlayerName: string,
-    //blackPlayerName: string,
+    playerWhite: string,
+    playerBlack: string,
     pieceMap: PieceCoordinates | null,
     pieceLegalMoves: string[][], //legal moves of current piece
     allLegalMoves: string[][],
@@ -20,13 +20,12 @@ export type ChessState = {
     lastMoveFrom: string,
     lastMoveTo: string,
     canMove: () => boolean,
-    setGameId: (gameId: string) => void,
     setShowPromotionMenu: (show: boolean) => void,
     setPromoteData: (promoteData: PromoteData[]) => void,
     setPieceLegalMoves: (legalMoves: string[][]) => void,
     movePiece: (oldCoords: string, newCoords: string) => void,
-    makeMove: (moveIndex: number, oldCoords: string, newCoords: string, socket: Socket) => void,
-    subscribeToMoves: (socket: Socket, gameId: string) => void,
+    makeMove: (moveIndex: number, oldCoords: string, newCoords: string, socket: Socket, secretName: string) => void,
+    subscribeToMoves: (socket: Socket) => void,
     unsubscribeFromMoves: (socket: Socket, gameId: string) => void,
 }
 

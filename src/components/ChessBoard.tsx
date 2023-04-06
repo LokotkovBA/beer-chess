@@ -7,32 +7,36 @@ import ChessPiece, { GenericPiece } from "./ChessPiece";
 import { Dot } from "~/assets/Dot";
 import { subscribeToGameStore } from "~/stores/game/store";
 import { boardSelector } from "~/stores/game/selectors";
+import { api } from "~/utils/api";
+import { useSession } from "next-auth/react";
 
 type ChessBoardProps = {
     size: string;
     gameId: string;
-    boardDefault?: boolean;
 }
 
 let curColor: TileColor = "black";
 const boardRanks = [1, 2, 3, 4, 5, 6, 7, 8];
 const boardFiles = ["a", "b", "c", "d", "e", "f", "g", "h"];
 
-export const ChessBoard: React.FC<ChessBoardProps> = memo(function ChessBoard({ size, boardDefault = true, gameId }) {
+export const ChessBoard: React.FC<ChessBoardProps> = memo(function ChessBoard({ size, gameId }) {
+    const { data: sessionData } = useSession();
+    const { data: gameData } = api.games.get.useQuery({ gameId });
+    const boardAlignment = sessionData?.user.uniqueName !== gameData?.blackUsername;
     const playerBoardRanks = useMemo(() => {
-        if (!boardDefault) {
+        if (!boardAlignment) {
             return boardRanks;
         }
         const buf = [...boardRanks];
         return buf.reverse();
-    }, [boardDefault]);
+    }, [boardAlignment]);
     const playerBoardFiles = useMemo(() => {
-        if (boardDefault) {
+        if (boardAlignment) {
             return boardFiles;
         }
         const buf = [...boardFiles];
         return buf.reverse();
-    }, [boardDefault]);
+    }, [boardAlignment]);
 
     return (
         <InteractiveBoard gameId={gameId} size={size} playerBoardRanks={playerBoardRanks} playerBoardFiles={playerBoardFiles}>
@@ -42,8 +46,12 @@ export const ChessBoard: React.FC<ChessBoardProps> = memo(function ChessBoard({ 
 });
 
 const InteractiveBoard: React.FC<ChessBoardProps & { playerBoardRanks: number[], playerBoardFiles: string[] } & PropsWithChildren> = ({ children, gameId, size, playerBoardFiles, playerBoardRanks }) => {
+    const { data: secret } = api.games.getSecretName.useQuery();
+    const { data: sessionData } = useSession();
     const useChessStore = subscribeToGameStore(gameId);
     const {
+        playerWhite,
+        playerBlack,
         allLegalMoves,
         pieceMap,
         pieceLegalMoves,
@@ -65,17 +73,17 @@ const InteractiveBoard: React.FC<ChessBoardProps & { playerBoardRanks: number[],
         };
     }, [gameId]);
     useEffect(() => {
-        subscribeToMoves(socket, gameId);
+        subscribeToMoves(socket);
         return () => {
             unsubscribeFromMoves(socket, gameId);
         };
     }, [gameId, subscribeToMoves, unsubscribeFromMoves]);
 
     function onDragEnd(event: DragEndEvent) {
-        if (!event.over) return;
+        if (!event.over || !secret) return;
         const { coords: oldCoords } = z.object({ coords: z.string() }).parse(event.active.data.current);
         const { moveIndex, newCoords } = z.object({ moveIndex: z.number(), newCoords: z.string() }).parse(event.over.data.current);
-        makeMove(moveIndex, oldCoords, newCoords, socket);
+        makeMove(moveIndex, oldCoords, newCoords, socket, secret.secretName);
     }
 
     function onDragStart(event: DragStartEvent) {
@@ -104,7 +112,8 @@ const InteractiveBoard: React.FC<ChessBoardProps & { playerBoardRanks: number[],
                                 return prevIsLegal;
                             }, false);
                             if (curPiece) {
-                                const disabled = !((whiteTurn && curPiece.toUpperCase() === curPiece) || (!whiteTurn && curPiece.toLowerCase() === curPiece));
+                                const disabled = !((sessionData?.user.uniqueName === playerWhite && whiteTurn && curPiece.toUpperCase() === curPiece) ||
+                                    (sessionData?.user.uniqueName === playerBlack && !whiteTurn && curPiece.toLowerCase() === curPiece));
                                 const pieceId = `${curPiece}${file}${rank}`;
                                 return (
                                     <EmptyTile isLastMove={isLastMove} key={tileId} size={size} isLegal={isLegal}>

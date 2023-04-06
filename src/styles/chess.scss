@@ -19,11 +19,11 @@
     padding: .2em;
 
     &--black {
-        background-color: #B58863;
+        background-color: var(--tile-black)
     }
 
     &--white {
-        background-color: #F0D9B5;
+        background-color: var(--tile-white)
     }
 
     &--last-move {

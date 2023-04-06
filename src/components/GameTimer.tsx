@@ -24,7 +24,7 @@ export const GameTimer: React.FC<GameTimerProps> = ({ gameId }) => {
     const [curTimeLeftBlack, setCutTimeLeftBlack] = useState(timeLeftBlack);
 
     useEffect(() => {
-        setCurTimeLeftWhite(timeLeftWhite);
+        setCurTimeLeftWhite(timeLeftWhite); //re-render triggers re-render
     }, [timeLeftWhite]);
 
     useEffect(() => {

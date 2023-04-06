@@ -74,17 +74,17 @@ const MainMenu: React.FC = memo(function MainMenu() {
                     <Link className="link" href="/">🍺</Link>
                 </li>
                 <li className="menu__item">
-                    <Link className="link" href="/rooms">Rooms</Link>
+                    <Link className="link" href="/rooms">Комнаты</Link>
                 </li>
                 <li className="menu__item">
-                    <Link className="link" href="/tournaments">Tournaments</Link>
+                    <Link className="link" href="/tournaments">Турниры</Link>
                 </li>
                 <li className="menu__item">
                     <button onClick={(event) => {
                         event.stopPropagation();
                         setShowProfile(true);
                     }} className="link">
-                        Profile
+                        Профиль
                         {sessionData?.user.image ? <Image className="profile-picture" width={45} height={45} alt={`Your profile picture`} src={sessionData.user.image} /> : <div className="profile-picture" />}
                     </button>
                 </li>
@@ -100,7 +100,7 @@ const MainMenu: React.FC = memo(function MainMenu() {
 const AuthButton: React.FC<{ sessionData: Session | null }> = ({ sessionData }) => {
     return (
         <button className={`button ${sessionData ? `button--logout` : `button--login`}`} onClick={sessionData ? () => void signOut() : () => void signIn()}>
-            {sessionData ? "Sign out" : "Sign in"}
+            {sessionData ? "Выйти" : "Войти"}
         </button>
     );
 };

@@ -2,6 +2,8 @@ import { type ChessState } from "./types";
 
 export function boardSelector(state: ChessState) { //selector for the entire board
     return {
+        playerWhite: state.playerWhite,
+        playerBlack: state.playerBlack,
         allLegalMoves: state.allLegalMoves,
         pieceMap: state.pieceMap,
         pieceLegalMoves: state.pieceLegalMoves,

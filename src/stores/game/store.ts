@@ -17,6 +17,8 @@ export function subscribeToGameStore(gameId: string) {
 
 function setupChessStore(gameId: string): StateCreator<ChessState, [], []> {
     return (set, get) => ({
+        playerBlack: "",
+        playerWhite: "",
         pieceMap: null,
         pieceLegalMoves: [],
         allLegalMoves: [],
@@ -33,7 +35,6 @@ function setupChessStore(gameId: string): StateCreator<ChessState, [], []> {
             const gameStatus = get().gameStatus;
             return gameStatus === "STARTED" || gameStatus === "INITIALIZING" || gameStatus === "FM";
         },
-        setGameId: (gameId) => set(state => ({ ...state, gameId: gameId })),
         setShowPromotionMenu: (show) => set(state => ({ ...state, showPromotionMenu: show })),
         setPromoteData: (promoteData) => set(state => ({ ...state, promoteData })),
         setPieceLegalMoves: (legalMoves) => set(state => ({ ...state, pieceLegalMoves: legalMoves })),
@@ -46,7 +47,7 @@ function setupChessStore(gameId: string): StateCreator<ChessState, [], []> {
             }
             set(state => ({ ...state, pieceMap }));
         },
-        makeMove: (moveIndex, oldCoords, newCoords, socket) => {
+        makeMove: (moveIndex, oldCoords, newCoords, socket, secretName) => {
             const { pieceLegalMoves, allLegalMoves, canMove, setPieceLegalMoves, setShowPromotionMenu, setPromoteData, movePiece } = get();
             if (!canMove()) return;
             let promoteData: PromoteData[];
@@ -54,7 +55,7 @@ function setupChessStore(gameId: string): StateCreator<ChessState, [], []> {
             if (currentMove) {
                 const moveData = currentMove[currentMove.length - 1];
                 if (!currentMove.includes("Promotion")) {
-                    socket.emit("move", { gameId, move: moveData });
+                    socket.emit("move", { gameId, move: moveData, secretName });
                 } else {
                     const currentMoveNotaion = currentMove[0]?.slice(0, -1);
                     if (!currentMoveNotaion) return;
@@ -79,6 +80,8 @@ function setupChessStore(gameId: string): StateCreator<ChessState, [], []> {
             socket.on(`${gameId} success`, (message) => {
                 console.log(message);
                 const {
+                    playerWhite,
+                    playerBlack,
                     legalMoves: newLegalMoves,
                     position: newPosition,
                     lastMoveFrom,
@@ -93,6 +96,8 @@ function setupChessStore(gameId: string): StateCreator<ChessState, [], []> {
                 if (!isGameStatus(gameStatus)) return socket.emit("error", ({ message: "Incorrect game status" }));
                 set(state => ({
                     ...state,
+                    playerWhite,
+                    playerBlack,
                     gameStatus,
                     positionStatus,
                     lastMoveFrom,
@@ -113,6 +118,8 @@ function setupChessStore(gameId: string): StateCreator<ChessState, [], []> {
 }
 
 const successSocketMessageSchema = z.object({
+    playerWhite: z.string(),
+    playerBlack: z.string(),
     gameStatus: z.string(),
     positionStatus: z.string(),
     lastMoveFrom: z.string(),

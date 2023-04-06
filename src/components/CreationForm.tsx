@@ -7,6 +7,7 @@ import { toast } from "react-hot-toast";
 import { useSession } from "next-auth/react";
 
 export const CreationForm: React.FC<{ roomId: string }> = ({ roomId }) => {
+    const { data: secret } = api.games.getSecretName.useQuery();
     useEffect(() => {
         socket.on("room ready status", (message) => {
             const { name, roomId: receievedRoomId } = z.object({ name: z.string(), roomId: z.string() }).parse(message);
@@ -32,18 +33,29 @@ export const CreationForm: React.FC<{ roomId: string }> = ({ roomId }) => {
     const [timeControl, setTimeControl] = useState(true);
     const { data: sessionData } = useSession();
 
-    const { mutate: createGame } = api.games.create.useMutation();
+    const { mutate: createGame } = api.games.create.useMutation({
+        onSuccess: (gameData) => {
+            socket.emit("start game", {
+                gameId: gameData.id,
+                gameTitle: "kek",
+                timeRule: gameData.timeRule,
+                playerWhite: gameData.whiteUsername,
+                playerBlack: gameData.blackUsername,
+                secretName: secret?.secretName
+            });
+        }
+    });
 
     function onSubmit(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
         if (isReady && isWhite.current && inviteeUsername.current?.value) {
-            createGame({ roomId: roomId, timeRule: "-1/-1", isWhite: isWhite.current.checked, inviteeUsername: inviteeUsername.current.value });
+            createGame({ roomId, timeRule: "10/3", isWhite: isWhite.current.checked, inviteeUsername: inviteeUsername.current.value });
         }
     }
 
     return (
         <form method="submit" onSubmit={onSubmit}>
-            <button onClick={() => socket.emit("start game", { gameId: roomId, gameTitle: "kek", playerWhite: "shmeck", playerBlack: "kekw", timeRule: "1/3" })}>Debug start</button> {/*todo: time rule */}
+            <button onClick={() => socket.emit("start game", { gameId: roomId, gameTitle: "kek", playerWhite: sessionData?.user.uniqueName, playerBlack: sessionData?.user.uniqueName, timeRule: "1/3", secretName: secret?.secretName })}>Debug start</button> {/*todo: time rule */}
             <input ref={inviteeUsername} placeholder="Имя оппонента" type="text" />
             <button type="button" onClick={() => socket.emit("send invite", { roomId, uniqueName: inviteeUsername.current?.value, name: sessionData?.user.name })}>Отправить приглашение</button>
             <fieldset>
