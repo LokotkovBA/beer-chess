@@ -9,6 +9,7 @@ import { subscribeToGameStore } from "~/stores/game/store";
 import { boardSelector } from "~/stores/game/selectors";
 import { api } from "~/utils/api";
 import { useSession } from "next-auth/react";
+import { shallow } from "zustand/shallow";
 
 type ChessBoardProps = {
     size: string;
@@ -65,7 +66,7 @@ const InteractiveBoard: React.FC<ChessBoardProps & { playerBoardRanks: number[],
         setPieceLegalMoves,
         subscribeToMoves,
         unsubscribeFromMoves
-    } = useChessStore(boardSelector);
+    } = useChessStore(boardSelector, shallow);
     useEffect(() => {
         socket.emit("join game", ({ gameId }));
         return () => {

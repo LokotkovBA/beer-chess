@@ -1,10 +1,12 @@
 import { z } from "zod";
-import { create, type UseBoundStore, type StateCreator, type StoreApi } from "zustand";
+import { create, type UseBoundStore, type StoreApi } from "zustand";
+import { immer } from "zustand/middleware/immer";
 import { type PromoteData } from "~/components/ChessBoard";
 import { isPieceNotation, PieceCoordinates } from "~/utils/PieceNotation";
 import { isPositionStatus, type ChessState, isGameStatus } from "./types";
+import { enableMapSet } from "immer";
 
-
+enableMapSet();
 const gamesStoreMap = new Map<string, UseBoundStore<StoreApi<ChessState>>>();
 
 export function subscribeToGameStore(gameId: string) {
@@ -15,8 +17,8 @@ export function subscribeToGameStore(gameId: string) {
     return newGameStore;
 }
 
-function setupChessStore(gameId: string): StateCreator<ChessState, [], []> {
-    return (set, get) => ({
+function setupChessStore(gameId: string) {
+    return immer<ChessState>((set: ((setState: ((state: ChessState) => void)) => void), get) => ({
         playerBlack: "",
         playerWhite: "",
         pieceMap: null,
@@ -31,13 +33,23 @@ function setupChessStore(gameId: string): StateCreator<ChessState, [], []> {
         lastMoveTo: "",
         gameStatus: "INITIALIZING",
         positionStatus: "PLAYABLE",
+        decrementTimer: () => {
+            const { whiteTurn } = get();
+            set(state => {
+                if (whiteTurn) {
+                    state.timeLeftWhite -= 1000;
+                } else {
+                    state.timeLeftBlack -= 1000;
+                }
+            });
+        },
         canMove: () => {
             const gameStatus = get().gameStatus;
             return gameStatus === "STARTED" || gameStatus === "INITIALIZING" || gameStatus === "FM";
         },
-        setShowPromotionMenu: (show) => set(state => ({ ...state, showPromotionMenu: show })),
-        setPromoteData: (promoteData) => set(state => ({ ...state, promoteData })),
-        setPieceLegalMoves: (legalMoves) => set(state => ({ ...state, pieceLegalMoves: legalMoves })),
+        setShowPromotionMenu: (show) => set(state => { state.showPromotionMenu = show; }),
+        setPromoteData: (promoteData) => set(state => { state.promoteData = promoteData; }),
+        setPieceLegalMoves: (legalMoves) => set(state => { state.pieceLegalMoves = legalMoves; }),
         movePiece: (oldCoords, newCoords) => {
             const pieceMap = structuredClone(get().pieceMap);
             const piece = pieceMap?.get(oldCoords);
@@ -45,7 +57,7 @@ function setupChessStore(gameId: string): StateCreator<ChessState, [], []> {
                 pieceMap?.delete(oldCoords);
                 pieceMap?.set(newCoords, piece);
             }
-            set(state => ({ ...state, pieceMap }));
+            set(state => { state.pieceMap = pieceMap; });
         },
         makeMove: (moveIndex, oldCoords, newCoords, socket, secretName) => {
             const { pieceLegalMoves, allLegalMoves, canMove, setPieceLegalMoves, setShowPromotionMenu, setPromoteData, movePiece } = get();
@@ -114,7 +126,7 @@ function setupChessStore(gameId: string): StateCreator<ChessState, [], []> {
         unsubscribeFromMoves: (socket, gameId) => {
             socket.off(`${gameId} success`);
         },
-    });
+    }));
 }
 
 const successSocketMessageSchema = z.object({
