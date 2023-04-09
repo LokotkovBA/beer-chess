@@ -30,6 +30,15 @@ export const CreationForm: React.FC<{ roomId: string }> = ({ roomId }) => {
         };
     }, [roomId]);
 
+    useEffect(() => {
+        socket.on(`${roomId} game ready`, () => {
+            void ctx.games.invalidate();
+        });
+        return () => {
+            socket.off(`${roomId} game ready`);
+        };
+    }, [ctx.games, roomId]);
+
     const titleRef = useRef<HTMLInputElement>(null);
     const isWhite = useRef<HTMLInputElement>(null);
     const inviteeUsername = useRef<HTMLInputElement>(null);
@@ -39,7 +48,7 @@ export const CreationForm: React.FC<{ roomId: string }> = ({ roomId }) => {
 
     const { mutate: createGame } = api.games.create.useMutation({
         onSuccess: ({ id, timeRule, blackUsername, whiteUsername, title }) => {
-            void ctx.games.invalidate();
+            socket.emit("game ready", { roomId });
             secretName && sendStartGame(id, title, whiteUsername, blackUsername, timeRule, secretName);
         }
     });
