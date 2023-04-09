@@ -1,0 +1,14 @@
+.home-page {
+    margin: auto;
+    display: flex;
+    gap: 2em;
+}
+
+.button-block {
+    width: 30ch;
+    padding-top: 2em;
+
+    &__button {
+        margin: 1em 0;
+    }
+}

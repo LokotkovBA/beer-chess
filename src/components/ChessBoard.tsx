@@ -10,13 +10,13 @@ import { boardSelector } from "~/stores/game/selectors";
 import { api } from "~/utils/api";
 import { useSession } from "next-auth/react";
 import { shallow } from "zustand/shallow";
+import TileBoard from "./TileBoard";
 
 type ChessBoardProps = {
     size: string;
     gameId: string;
 }
 
-let curColor: TileColor = "black";
 const boardRanks = [1, 2, 3, 4, 5, 6, 7, 8];
 const boardFiles = ["a", "b", "c", "d", "e", "f", "g", "h"];
 
@@ -155,30 +155,10 @@ type TileProps = {
     isLegal?: boolean;
 }
 
-const Tile: React.FC<TileProps> = ({ color = "black", size }) => {
-    return <div style={{ minWidth: size, height: size }} className={`chess-tile chess-tile--${color}`} />;
-};
-
 const EmptyTile: React.FC<TileProps & PropsWithChildren> = ({ size, isLegal = false, children, isLastMove }) => {
     return (
         <div style={{ minWidth: size, height: size }} className={`chess-tile${isLastMove ? " chess-tile--last-move" : ""}${(children && isLegal) ? " chess-tile--capture" : ""}`} >
             {children}
-        </div>
-    );
-};
-
-const TileBoard: React.FC<{ ranks: number[], files: string[], size: string }> = ({ ranks, files, size }) => {
-    return (
-        <div className="chess-board">
-            {ranks.map(rank => {
-                const entireRank = files.map(file => {
-                    curColor = curColor === "white" ? "black" : "white";
-                    const tileId = `${file}${rank}`;
-                    return <Tile size={size} key={tileId} color={curColor} />;
-                });
-                curColor = curColor === "white" ? "black" : "white";
-                return <div key={rank} className="chess-board__row">{entireRank}</div>;
-            })}
         </div>
     );
 };

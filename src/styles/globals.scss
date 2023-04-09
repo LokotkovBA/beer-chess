@@ -3,14 +3,21 @@ body {
     padding: 0;
     margin: 0;
     background-color: var(--background-color);
+    perspective: 900px;
+}
+
+* {
+    margin: 0;
+    padding: 0;
 }
 
 :root {
-    --background-color: #242424;
-    --alert-color: #1A1A1A;
-    --pop-up-color: #1A1A1A;
-    --text-color: rgba(255, 255, 255, 0.87);
-
+    --background-color: #242038FF;
+    --hover-color: #4E389488;
+    --alert-color: #4E3894FF;
+    --text-color: #F7ECE1FF;
+    --button-color: #4E3894FF;
+    --red-color: #8C1C13FF;
     --tile-black: #48a9a6ff;
     --tile-white: #f0fff1ff;
     color-scheme: light dark;
@@ -25,47 +32,61 @@ body {
     -webkit-text-size-adjust: 100%;
 }
 
+
+.main-content {
+    display: flex;
+}
+
 .header {
     margin: 0 30vw;
 }
 
 .menu {
-    padding: 0;
+    margin: 1.5em;
     list-style: none;
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: .5em;
     justify-items: center;
+}
 
-    &__item {
-        display: flex;
+.game-wrapper {
+    margin: 1em auto;
+}
+
+.game-wrapper {
+    margin: 1em auto;
+}
+
+@mixin button-style($font-size, $pad-topbottom, $pad-leftright, $border-radius, $gap) {
+    border: none;
+    border-radius: $border-radius;
+    padding: $pad-topbottom $pad-leftright;
+    font-size: $font-size;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: $gap;
+    color: var(--text-color);
+    font-weight: 700;
+}
+
+.button {
+    @include button-style(1.5rem, .5em, .9em, .5em, .2em);
+    background-color: var(--button-color);
+
+    &--brb {
+        background-color: var(--red-color);
     }
 }
 
-.game-wrapper {
-    margin: 1em auto;
-}
-
-.game-wrapper {
-    margin: 1em auto;
-}
-
 .link {
+    @include button-style(1.5rem, .2em, .5em, .5em, .2em);
     background-color: var(--background-color);
-    color: var(--text-color);
     text-decoration: none;
-    border: none;
-    cursor: pointer;
-    font-size: 1.5rem;
-    border-radius: .5rem;
-    padding: .1em .5em;
-
-    display: flex;
-    align-items: center;
-    gap: .2em;
 
     &:hover {
-        background-color: var(--alert-color);
+        background-color: var(--hover-color);
     }
 }
 
@@ -77,10 +98,12 @@ body {
 
 .pop-up {
     position: absolute;
-    right: 1em;
-    background-color: var(--pop-up-color);
-    border-radius: 1em;
+    background-color: var(--background-color);
+    top: 2em;
+    right: 25vw;
     padding: 1em;
+    border-radius: 1em;
+    z-index: 1;
 
     display: flex;
     flex-direction: column;

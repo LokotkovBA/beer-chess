@@ -9,6 +9,7 @@ import { Toaster } from "react-hot-toast";
 import Profile from "~/components/Profile";
 import { socket } from "~/server/gameServer";
 import "~/styles/globals.scss";
+import "~/styles/home-page.scss";
 import "~/styles/chess.scss";
 
 const MyApp: AppType<{ session: Session | null }> = ({
@@ -47,7 +48,7 @@ const PageLayout: React.FC<PropsWithChildren> = ({ children }) => {
                     <MainMenu />
                 </nav>
             </header>
-            <main>
+            <main className="main-content">
                 {children}
             </main>
         </>);
@@ -80,13 +81,13 @@ const MainMenu: React.FC = memo(function MainMenu() {
                     <Link className="link" href="/tournaments">Турниры</Link>
                 </li>
                 <li className="menu__item">
-                    <button onClick={(event) => {
+                    <a onClick={(event) => {
                         event.stopPropagation();
                         setShowProfile(true);
                     }} className="link">
                         Профиль
                         {sessionData?.user.image ? <Image className="profile-picture" width={45} height={45} alt={`Your profile picture`} src={sessionData.user.image} /> : <div className="profile-picture" />}
-                    </button>
+                    </a>
                 </li>
             </menu>
             {showProfile && <div onClick={(event) => event.stopPropagation()} className="pop-up" >
