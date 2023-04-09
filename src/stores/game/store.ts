@@ -59,7 +59,7 @@ function setupChessStore(gameId: string) {
             }
             set(state => { state.pieceMap = pieceMap; });
         },
-        makeMove: (moveIndex, oldCoords, newCoords, socket, secretName) => {
+        makeMove: (moveIndex, oldCoords, newCoords, socket, secretName, updateDB) => {
             const { pieceLegalMoves, allLegalMoves, canMove, setPieceLegalMoves, setShowPromotionMenu, setPromoteData, movePiece } = get();
             if (!canMove()) return;
             let promoteData: PromoteData[];
@@ -67,7 +67,12 @@ function setupChessStore(gameId: string) {
             if (currentMove) {
                 const moveData = currentMove[currentMove.length - 1];
                 if (!currentMove.includes("Promotion")) {
-                    socket.emit("move", { gameId, move: moveData, secretName });
+                    socket.emit("move", { gameId, move: moveData, secretName }, (success: boolean, response: { timeLeftWhite: number, timeLeftBlack: number, history: string, status: string, position: string, gameId: string }) => {
+                        console.log(success, response);
+                        if (success) {
+                            updateDB(response);
+                        }
+                    });
                 } else {
                     const currentMoveNotaion = currentMove[0]?.slice(0, -1);
                     if (!currentMoveNotaion) return;

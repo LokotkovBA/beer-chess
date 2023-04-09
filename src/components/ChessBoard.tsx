@@ -47,8 +47,8 @@ export const ChessBoard: React.FC<ChessBoardProps> = memo(function ChessBoard({ 
 });
 
 const InteractiveBoard: React.FC<ChessBoardProps & { playerBoardRanks: number[], playerBoardFiles: string[] } & PropsWithChildren> = ({ children, gameId, size, playerBoardFiles, playerBoardRanks }) => {
-    const { data: secret } = api.games.getSecretName.useQuery();
     const { data: sessionData } = useSession();
+    const { data: secretName } = api.games.getSecretName.useQuery();
     const useChessStore = subscribeToGameStore(gameId);
     const {
         playerWhite,
@@ -79,12 +79,13 @@ const InteractiveBoard: React.FC<ChessBoardProps & { playerBoardRanks: number[],
             unsubscribeFromMoves(socket, gameId);
         };
     }, [gameId, subscribeToMoves, unsubscribeFromMoves]);
+    const { mutate: updateGame } = api.games.update.useMutation();
 
     function onDragEnd(event: DragEndEvent) {
-        if (!event.over || !secret) return;
+        if (!event.over || !secretName) return;
         const { coords: oldCoords } = z.object({ coords: z.string() }).parse(event.active.data.current);
         const { moveIndex, newCoords } = z.object({ moveIndex: z.number(), newCoords: z.string() }).parse(event.over.data.current);
-        makeMove(moveIndex, oldCoords, newCoords, socket, secret.secretName);
+        makeMove(moveIndex, oldCoords, newCoords, socket, secretName, updateGame);
     }
 
     function onDragStart(event: DragStartEvent) {
@@ -190,9 +191,9 @@ type PromotionMenuProps = {
 }
 export type PromoteData = { piece: string, index: string };
 const PromotionMenu: React.FC<PromotionMenuProps> = ({ size, isWhite, promoteData, gameId }) => {
-    const { data: secret } = api.games.getSecretName.useQuery();
+    const { data: secretName } = api.games.getSecretName.useQuery();
     function selectPiece(index: string) {
-        socket.emit("move", { gameId: gameId, move: index, secretName: secret?.secretName });
+        socket.emit("move", { gameId: gameId, move: index, secretName: secretName });
     }
     return (
         <menu className="promotion-menu">

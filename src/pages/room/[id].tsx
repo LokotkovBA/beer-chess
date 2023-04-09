@@ -13,7 +13,7 @@ import { GameTimer } from "~/components/GameTimer";
 
 const RoomPage: NextPage<{ roomId: string, session: Session | null }> = ({ roomId }) => {
     const { data: roomData } = api.rooms.get.useQuery({ roomId });
-    const { data: gamesData } = api.games.getAll.useQuery({ roomId });
+    const { data: gameData } = api.games.getByRoomId.useQuery({ roomId });
     const { data: sessionData } = useSession();
     useEffect(() => {
         if (roomData) {
@@ -43,13 +43,8 @@ const RoomPage: NextPage<{ roomId: string, session: Session | null }> = ({ roomI
                     (sessionData?.user.name) && (roomData.inviteeUsername === sessionData?.user.uniqueName || !roomData.inviteeUsername) &&
                     <ReadyForm roomId={roomId} creatorName={roomData.creatorUsername} name={sessionData?.user.name} />
                 }
-
-                {gamesData?.map(({ id }) => (
-                    <React.Fragment key={id}>
-                        <GameTimer gameId={id} />
-                        <ChessBoard size={"5rem"} gameId={id} />
-                    </React.Fragment>
-                ))}
+                {gameData && <GameTimer gameId={gameData.id} />}
+                {gameData && <ChessBoard size={"5rem"} gameId={gameData.id} />}
             </div>
         </>
     );

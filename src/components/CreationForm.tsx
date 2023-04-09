@@ -1,13 +1,16 @@
 import { type FormEvent, useEffect, useRef, useState } from "react";
 import { z } from "zod";
-import { socket } from "~/server/gameServer";
+import { sendStartGame, socket } from "~/server/gameServer";
 import { api } from "~/utils/api";
 import { GenericPiece } from "./ChessPiece";
 import { toast } from "react-hot-toast";
 import { useSession } from "next-auth/react";
 
+
+
 export const CreationForm: React.FC<{ roomId: string }> = ({ roomId }) => {
-    const { data: secret } = api.games.getSecretName.useQuery();
+    const { data: secretName } = api.games.getSecretName.useQuery();
+    const ctx = api.useContext();
     useEffect(() => {
         socket.on("room ready status", (message) => {
             const { name, roomId: receievedRoomId } = z.object({ name: z.string(), roomId: z.string() }).parse(message);
@@ -27,6 +30,7 @@ export const CreationForm: React.FC<{ roomId: string }> = ({ roomId }) => {
         };
     }, [roomId]);
 
+    const titleRef = useRef<HTMLInputElement>(null);
     const isWhite = useRef<HTMLInputElement>(null);
     const inviteeUsername = useRef<HTMLInputElement>(null);
     const [isReady, setIsReady] = useState(false);
@@ -34,28 +38,23 @@ export const CreationForm: React.FC<{ roomId: string }> = ({ roomId }) => {
     const { data: sessionData } = useSession();
 
     const { mutate: createGame } = api.games.create.useMutation({
-        onSuccess: (gameData) => {
-            socket.emit("start game", {
-                gameId: gameData.id,
-                gameTitle: "kek",
-                timeRule: gameData.timeRule,
-                playerWhite: gameData.whiteUsername,
-                playerBlack: gameData.blackUsername,
-                secretName: secret?.secretName
-            });
+        onSuccess: ({ id, timeRule, blackUsername, whiteUsername, title }) => {
+            void ctx.games.invalidate();
+            secretName && sendStartGame(id, title, whiteUsername, blackUsername, timeRule, secretName);
         }
     });
 
     function onSubmit(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
-        if (isReady && isWhite.current && inviteeUsername.current?.value) {
-            createGame({ roomId, timeRule: "10/3", isWhite: isWhite.current.checked, inviteeUsername: inviteeUsername.current.value });
+        if (isReady && titleRef.current && isWhite.current && inviteeUsername.current?.value) {
+            createGame({ title: titleRef.current.value, maxTime: 10 * 60 * 1000, roomId, timeRule: "10/3", isWhite: isWhite.current.checked, inviteeUsername: inviteeUsername.current.value });
         }
     }
 
     return (
         <form method="submit" onSubmit={onSubmit}>
-            <button onClick={() => socket.emit("start game", { gameId: roomId, gameTitle: "kek", playerWhite: sessionData?.user.uniqueName, playerBlack: sessionData?.user.uniqueName, timeRule: "1/3", secretName: secret?.secretName })}>Debug start</button> {/*todo: time rule */}
+            <input ref={titleRef} placeholder="Название игры" type="text" />
+            <button onClick={() => sessionData && secretName && sendStartGame(roomId, "kek", sessionData?.user.uniqueName, sessionData?.user.uniqueName, "1/3", secretName)}>Debug start</button> {/*todo: time rule */}
             <input ref={inviteeUsername} placeholder="Имя оппонента" type="text" />
             <button type="button" onClick={() => socket.emit("send invite", { roomId, uniqueName: inviteeUsername.current?.value, name: sessionData?.user.name })}>Отправить приглашение</button>
             <fieldset>

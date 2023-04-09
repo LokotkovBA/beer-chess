@@ -99,12 +99,15 @@ enum Status {
 
 model Game {
     id            String     @id @default(cuid())
+    title         String
     roomId        String
     whiteUsername String
     blackUsername String
     createdAt     DateTime   @default(now())
     history       String     @default("1. ") @db.Text //AN format 
     position      String     @default("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
+    timeLeftWhite Int
+    timeLeftBlack Int
     timeRule      String // time in minutes / increment in seconds (-1 = timer is off)
     status        GameStatus @default(INITIALIZING)
     whiteUser     User       @relation(name: "gamesAsWhite", fields: [whiteUsername], references: [uniqueName])

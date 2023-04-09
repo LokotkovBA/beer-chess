@@ -31,11 +31,12 @@ function getPieceColors(isWhite: boolean, whiteColor: string, blackColor: string
 const ChessPiece: React.FC<GenericChessPieceProps> = ({ gameId, piece, size, id, coords, moveIndex = -1, capturingPieceCoords, disabled = false, isLegal = false, whiteColor = "#F4F7FA", blackColor = "#34364C" }) => {
     const useChessStore = subscribeToGameStore(gameId);
     const makeMove = useChessStore(pieceSelector);
-    const { data: secret } = api.games.getSecretName.useQuery();
+    const { data: secretName } = api.games.getSecretName.useQuery();
     const { setNodeRef, attributes: { role, tabIndex }, listeners, transform, isDragging } = useDraggable({ id: id, disabled, data: { coords } });
     const { setNodeRef: setDroppable } = useDroppable({ id: id, disabled: !isLegal, data: { moveIndex, newCoords: coords } });
+    const { mutate: updateGame } = api.games.update.useMutation();
     return (
-        <div onClick={() => secret && makeMove(moveIndex, capturingPieceCoords, coords, socket, secret.secretName)}
+        <div onClick={() => secretName && makeMove(moveIndex, capturingPieceCoords, coords, socket, secretName, updateGame)}
             className={`chess-piece${disabled ? "" : " chess-piece--active"}${isDragging ? " chess-piece--dragging" : ""}${isLegal ? " chess-piece--capture" : ""}`}
             style={{ transform: CSS.Transform.toString(transform) }} role={role} tabIndex={tabIndex} ref={setNodeRef} {...listeners} >
             <div ref={setDroppable}>
