@@ -33,6 +33,7 @@ function setupChessStore(gameId: string) {
         lastMoveTo: "",
         gameStatus: "INITIALIZING",
         positionStatus: "PLAYABLE",
+        capturedPieces: [],
         decrementTimer: () => {
             const { whiteTurn } = get();
             set(state => {
@@ -107,12 +108,14 @@ function setupChessStore(gameId: string) {
                     gameStatus,
                     positionStatus,
                     remainingBlackTime,
-                    remainingWhiteTime
+                    remainingWhiteTime,
+                    capturedPieces
                 } = successSocketMessageSchema.parse(message);
                 if (!isPositionStatus(positionStatus)) return socket.emit("error", ({ message: "Incorrect position status" }));
                 if (!isGameStatus(gameStatus)) return socket.emit("error", ({ message: "Incorrect game status" }));
                 set(state => ({
                     ...state,
+                    capturedPieces,
                     playerWhite,
                     playerBlack,
                     gameStatus,
@@ -135,6 +138,7 @@ function setupChessStore(gameId: string) {
 }
 
 const successSocketMessageSchema = z.object({
+    capturedPieces: z.array(z.tuple([z.string(), z.number()])),
     playerWhite: z.string(),
     playerBlack: z.string(),
     gameStatus: z.string(),

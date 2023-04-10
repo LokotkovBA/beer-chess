@@ -27,6 +27,7 @@ export type ChessState = {
     positionStatus: PositionStatus,
     lastMoveFrom: string,
     lastMoveTo: string,
+    capturedPieces: [string, number][]
     decrementTimer: () => void,
     canMove: () => boolean,
     setShowPromotionMenu: (show: boolean) => void,

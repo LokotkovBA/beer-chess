@@ -10,7 +10,6 @@ import { useSession } from "next-auth/react";
 
 export const CreationForm: React.FC<{ roomId: string }> = ({ roomId }) => {
     const { data: secretName } = api.games.getSecretName.useQuery();
-    const ctx = api.useContext();
     useEffect(() => {
         socket.on("room ready status", (message) => {
             const { name, roomId: receievedRoomId } = z.object({ name: z.string(), roomId: z.string() }).parse(message);
@@ -29,15 +28,6 @@ export const CreationForm: React.FC<{ roomId: string }> = ({ roomId }) => {
             socket.off("room ready status");
         };
     }, [roomId]);
-
-    useEffect(() => {
-        socket.on(`${roomId} game ready`, () => {
-            void ctx.games.invalidate();
-        });
-        return () => {
-            socket.off(`${roomId} game ready`);
-        };
-    }, [ctx.games, roomId]);
 
     const titleRef = useRef<HTMLInputElement>(null);
     const isWhite = useRef<HTMLInputElement>(null);

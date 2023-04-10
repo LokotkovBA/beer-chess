@@ -26,3 +26,7 @@ export function timerSelector(state: ChessState) {
 export function pieceSelector(state: ChessState) { //selector for a piece
     return state.makeMove;
 }
+
+export function capturedPiecesSelector(state: ChessState) { //selector for a piece
+    return state.capturedPieces;
+}

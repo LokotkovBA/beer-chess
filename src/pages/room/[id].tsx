@@ -9,12 +9,15 @@ import { useSession } from "next-auth/react";
 import { CreationForm } from "~/components/CreationForm";
 import { type Session } from "next-auth";
 import styles from "./[id].module.scss";
-import { GameTimer } from "~/components/GameTimer";
+import GameInfoPanel from "~/components/GameInfoPanel";
 
 const RoomPage: NextPage<{ roomId: string, session: Session | null }> = ({ roomId }) => {
+    const ctx = api.useContext();
     const { data: roomData } = api.rooms.get.useQuery({ roomId });
     const { data: gameData } = api.games.getByRoomId.useQuery({ roomId });
     const { data: sessionData } = useSession();
+    const [showForm, setShowForm] = useState(true);
+    const boardAlignment = sessionData?.user.uniqueName !== gameData?.blackUsername; // true - default board alignment
     useEffect(() => {
         if (roomData) {
             socket.emit("join room", { roomId });
@@ -25,6 +28,16 @@ const RoomPage: NextPage<{ roomId: string, session: Session | null }> = ({ roomI
             }
         };
     }, [roomId, roomData]);
+
+    useEffect(() => {
+        socket.on(`${roomId} game ready`, () => {
+            void ctx.games.invalidate();
+            setShowForm(false);
+        });
+        return () => {
+            socket.off(`${roomId} game ready`);
+        };
+    }, [ctx.games, roomId]);
 
     if (!roomData) {
         return <div>404</div>;
@@ -37,14 +50,14 @@ const RoomPage: NextPage<{ roomId: string, session: Session | null }> = ({ roomI
                 <link rel="icon" href="/favicon.ico" />
             </Head>
             <div className={styles.room}>
-                {sessionData?.user.uniqueName === roomData.creatorUsername ?
+                {showForm && (sessionData?.user.uniqueName === roomData.creatorUsername ?
                     <CreationForm roomId={roomId} />
                     :
                     (sessionData?.user.name) && (roomData.inviteeUsername === sessionData?.user.uniqueName || !roomData.inviteeUsername) &&
-                    <ReadyForm roomId={roomId} creatorName={roomData.creatorUsername} name={sessionData?.user.name} />
+                    <ReadyForm roomId={roomId} creatorName={roomData.creatorUsername} name={sessionData?.user.name} />)
                 }
-                {gameData && <GameTimer gameId={gameData.id} />}
                 {gameData && <ChessBoard size={"5rem"} gameId={gameData.id} />}
+                {gameData && <GameInfoPanel gameId={gameData.id} boardAlignment={boardAlignment} />}
             </div>
         </>
     );
