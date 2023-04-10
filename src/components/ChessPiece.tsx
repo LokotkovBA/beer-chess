@@ -36,7 +36,7 @@ const ChessPiece: React.FC<GenericChessPieceProps> = ({ gameId, piece, size, id,
     const { setNodeRef: setDroppable } = useDroppable({ id: id, disabled: !isLegal, data: { moveIndex, newCoords: coords } });
     const { mutate: updateGame } = api.games.update.useMutation();
     return (
-        <div onClick={() => secretName && makeMove(moveIndex, capturingPieceCoords, coords, socket, secretName, updateGame)}
+        <div onClick={() => secretName && makeMove(moveIndex, capturingPieceCoords, coords, socket, secretName, gameId, updateGame)}
             className={`chess-piece${disabled ? "" : " chess-piece--active"}${isDragging ? " chess-piece--dragging" : ""}${isLegal ? " chess-piece--capture" : ""}`}
             style={{ transform: CSS.Transform.toString(transform) }} role={role} tabIndex={tabIndex} ref={setNodeRef} {...listeners} >
             <div ref={setDroppable}>

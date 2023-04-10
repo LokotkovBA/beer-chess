@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { create, type UseBoundStore, type StoreApi } from "zustand";
+import { create, type UseBoundStore, type StoreApi, type StateCreator } from "zustand";
 import { immer } from "zustand/middleware/immer";
 import { type PromoteData } from "~/components/ChessBoard";
 import { isPieceNotation, PieceCoordinates } from "~/utils/PieceNotation";
@@ -12,13 +12,13 @@ const gamesStoreMap = new Map<string, UseBoundStore<StoreApi<ChessState>>>();
 export function subscribeToGameStore(gameId: string) {
     const gameStore = gamesStoreMap.get(gameId);
     if (gameStore) return gameStore;
-    const newGameStore = create(setupChessStore(gameId));
+    const newGameStore = create(immer<ChessState>(stateCreator));
     gamesStoreMap.set(gameId, newGameStore);
     return newGameStore;
 }
 
-function setupChessStore(gameId: string) {
-    return immer<ChessState>((set: ((setState: ((state: ChessState) => void)) => void), get) => ({
+const stateCreator: StateCreator<ChessState, [["zustand/immer", never]], []> = (set: ((setState: ((state: ChessState) => void)) => void), get) => {
+    return {
         playerBlack: "",
         playerWhite: "",
         pieceMap: null,
@@ -60,7 +60,7 @@ function setupChessStore(gameId: string) {
             }
             set(state => { state.pieceMap = pieceMap; });
         },
-        makeMove: (moveIndex, oldCoords, newCoords, socket, secretName, updateDB) => {
+        makeMove: (moveIndex, oldCoords, newCoords, socket, secretName, gameId, updateDB) => {
             const { pieceLegalMoves, allLegalMoves, canMove, setPieceLegalMoves, setShowPromotionMenu, setPromoteData, movePiece } = get();
             if (!canMove()) return;
             let promoteData: PromoteData[];
@@ -94,7 +94,7 @@ function setupChessStore(gameId: string) {
             }
             setPieceLegalMoves([]);
         },
-        subscribeToMoves: (socket) => {
+        subscribeToMoves: (socket, gameId) => {
             socket.on(`${gameId} success`, (message) => {
                 console.log(message);
                 const {
@@ -113,29 +113,29 @@ function setupChessStore(gameId: string) {
                 } = successSocketMessageSchema.parse(message);
                 if (!isPositionStatus(positionStatus)) return socket.emit("error", ({ message: "Incorrect position status" }));
                 if (!isGameStatus(gameStatus)) return socket.emit("error", ({ message: "Incorrect game status" }));
-                set(state => ({
-                    ...state,
-                    capturedPieces,
-                    playerWhite,
-                    playerBlack,
-                    gameStatus,
-                    positionStatus,
-                    lastMoveFrom,
-                    lastMoveTo,
-                    timeLeftWhite: remainingWhiteTime,
-                    timeLeftBlack: remainingBlackTime,
-                    allLegalMoves: newLegalMoves.map((move) => move.split("/")),
-                    whiteTurn: turn === "w",
-                    pieceMap: getCoordsFromPosition(newPosition),
-                    showPromotionMenu: false
-                }));
+                set(state => {
+                    state.capturedPieces = capturedPieces;
+                    state.playerWhite = playerWhite;
+                    state.playerBlack = playerBlack;
+                    state.gameStatus = gameStatus;
+                    state.positionStatus = positionStatus;
+                    state.lastMoveFrom = lastMoveFrom;
+                    state.lastMoveTo = lastMoveTo;
+                    state.timeLeftWhite = remainingWhiteTime;
+                    state.timeLeftBlack = remainingBlackTime;
+                    state.allLegalMoves = newLegalMoves.map((move) => move.split("/"));
+                    state.whiteTurn = turn === "w";
+                    state.pieceMap = getCoordsFromPosition(newPosition);
+                    state.showPromotionMenu = false;
+                });
             });
         },
         unsubscribeFromMoves: (socket, gameId) => {
             socket.off(`${gameId} success`);
         },
-    }));
-}
+    };
+};
+
 
 const successSocketMessageSchema = z.object({
     capturedPieces: z.array(z.tuple([z.string(), z.number()])),

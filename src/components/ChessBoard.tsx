@@ -74,7 +74,7 @@ const InteractiveBoard: React.FC<ChessBoardProps & { playerBoardRanks: number[],
         };
     }, [gameId]);
     useEffect(() => {
-        subscribeToMoves(socket);
+        subscribeToMoves(socket, gameId);
         return () => {
             unsubscribeFromMoves(socket, gameId);
         };
@@ -85,7 +85,7 @@ const InteractiveBoard: React.FC<ChessBoardProps & { playerBoardRanks: number[],
         if (!event.over || !secretName) return;
         const { coords: oldCoords } = z.object({ coords: z.string() }).parse(event.active.data.current);
         const { moveIndex, newCoords } = z.object({ moveIndex: z.number(), newCoords: z.string() }).parse(event.over.data.current);
-        makeMove(moveIndex, oldCoords, newCoords, socket, secretName, updateGame);
+        makeMove(moveIndex, oldCoords, newCoords, socket, secretName, gameId, updateGame);
     }
 
     function onDragStart(event: DragStartEvent) {

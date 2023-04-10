@@ -34,8 +34,8 @@ export type ChessState = {
     setPromoteData: (promoteData: PromoteData[]) => void,
     setPieceLegalMoves: (legalMoves: string[][]) => void,
     movePiece: (oldCoords: string, newCoords: string) => void,
-    makeMove: (moveIndex: number, oldCoords: string, newCoords: string, socket: Socket, secretName: string, updateDB: PositionUseMutationFunction) => void,
-    subscribeToMoves: (socket: Socket) => void,
+    makeMove: (moveIndex: number, oldCoords: string, newCoords: string, socket: Socket, secretName: string, gameId: string, updateDB: PositionUseMutationFunction) => void,
+    subscribeToMoves: (socket: Socket, gameId: string) => void,
     unsubscribeFromMoves: (socket: Socket, gameId: string) => void,
 }
 
