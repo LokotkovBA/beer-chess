@@ -41,7 +41,7 @@ const GameInfoPanel: React.FC<GameInfoPanelProps> = ({ boardAlignment, gameId })
                         (sessionData?.user.uniqueName === playerWhite || sessionData?.user.uniqueName === playerBlack)
                         &&
                         <div className="panel-wrapper__actions">
-                            <button onClick={suggestDraw} className="link"><span className="icon-draw">0.5</span></button>
+                            <button onClick={suggestDraw} className="link"><span className="icon-draw">½</span></button>
                             <button onClick={forfeit} className={`link${commitForfeit ? " link--sure" : ""}`}><Flag size="3rem" /></button>
                             {commitForfeit && <button onClick={() => setCommitForfeit(false)} className="link"><Cross size="1.5rem" /></button>}
                         </div>
