@@ -46,16 +46,20 @@
 }
 
 .game-wrapper {
-    margin: 1em auto;
+    grid-column: 2;
 }
 
 .panel-wrapper {
-    margin: auto .5em;
+    background-color: #1e1b4b;
+    padding: 1em;
+    border-radius: 1em;
+    margin: auto 0;
     display: grid;
     gap: .2em;
     grid-template-rows: repeat(5, 1fr);
     align-items: center;
     min-height: 30ch;
+    min-width: 24ch;
 
     &__pieces {
         display: flex;

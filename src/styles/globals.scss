@@ -13,6 +13,7 @@ body {
 
 :root {
     --bg-color: #172554;
+    --bg2-color: #2563eb;
     --link-hover-color: #1e3a8a;
     --alert-color: #1e40af;
     --text-color: #eff6ff;
@@ -20,7 +21,9 @@ body {
     --button-hover-color: #5b21b6;
     --red-color: #7f1d1d;
     --red-hover-color: #991b1b;
-
+    --red-text-color: #dc2626;
+    --sure-color: #7c2d12;
+    --sure-hover-color: #9a3412;
     --tile-black: #48a9a6ff;
     --tile-white: #f0fff1ff;
     color-scheme: light dark;
@@ -35,13 +38,9 @@ body {
     -webkit-text-size-adjust: 100%;
 }
 
-
-.main-content {
-    display: flex;
-}
-
 .header {
     margin: 0 30vw;
+    padding: 1em;
 }
 
 .menu {
@@ -51,14 +50,6 @@ body {
     grid-template-columns: repeat(4, 1fr);
     gap: .5em;
     justify-items: center;
-}
-
-.game-wrapper {
-    margin: 1em auto;
-}
-
-.game-wrapper {
-    margin: 1em auto;
 }
 
 @mixin button-style($font-size, $pad-topbottom, $pad-leftright, $border-radius, $gap) {
@@ -93,11 +84,19 @@ body {
 
 .link {
     @include button-style(1.5rem, .2em, .5em, .5em, .2em);
-    background-color: var(--bg-color);
+    background-color: inherit;
     text-decoration: none;
 
     &:hover {
         background-color: var(--link-hover-color);
+    }
+
+    &--sure {
+        background-color: var(--sure-color);
+
+        &:hover {
+            background-color: var(--sure-hover-color);
+        }
     }
 }
 

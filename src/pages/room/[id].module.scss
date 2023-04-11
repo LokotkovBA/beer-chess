@@ -1,5 +1,6 @@
 .room {
-    display: flex;
-    justify-items: flex-end;
-    margin: auto;
+    display: grid;
+    gap: 1em;
+    grid-template-columns: .5fr 1fr .5fr;
+    justify-items: start;
 }

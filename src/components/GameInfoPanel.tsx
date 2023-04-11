@@ -1,10 +1,14 @@
-import React, { type PropsWithChildren, useEffect, useRef } from "react";
+import React, { type PropsWithChildren, useEffect, useRef, useState, memo } from "react";
 import { shallow } from "zustand/shallow";
 import { capturedPiecesSelector, playersSelector, timerSelector } from "~/stores/game/selectors";
 import { subscribeToGameStore } from "~/stores/game/store";
 import { GenericPiece } from "./ChessPiece";
 import { useSession } from "next-auth/react";
 import Flag from "~/assets/Flag";
+import { api } from "~/utils/api";
+import { socket } from "~/server/gameServer";
+import { toast } from "react-hot-toast";
+import Cross from "~/assets/Cross";
 
 type GameInfoPanelProps = {
     gameId: string
@@ -14,7 +18,21 @@ type GameInfoPanelProps = {
 const GameInfoPanel: React.FC<GameInfoPanelProps> = ({ boardAlignment, gameId }) => {
     const useChessStore = subscribeToGameStore(gameId);
     const [playerWhite, playerBlack] = useChessStore(playersSelector);
+    const [commitForfeit, setCommitForfeit] = useState(false);
     const { data: sessionData } = useSession();
+    const { data: secretName } = api.games.getSecretName.useQuery();
+
+    function forfeit() {
+        if (commitForfeit) {
+            socket.emit("forfeit", { gameId, secretName });
+        }
+        setCommitForfeit(true);
+    }
+
+    function suggestDraw() {
+        socket.emit("suggest draw", { gameId, secretName });
+        toast.success("Предложение отправлено");
+    }
     return (
         <div className="panel-wrapper">
             <CapturedPieces size="3rem" gameId={gameId} boardAlignment={boardAlignment}>
@@ -23,8 +41,9 @@ const GameInfoPanel: React.FC<GameInfoPanelProps> = ({ boardAlignment, gameId })
                         (sessionData?.user.uniqueName === playerWhite || sessionData?.user.uniqueName === playerBlack)
                         &&
                         <div className="panel-wrapper__actions">
-                            <button className="link"><Flag size="3rem" /></button>
-                            <button className="link"><span className="icon-draw">0.5</span></button>
+                            <button onClick={suggestDraw} className="link"><span className="icon-draw">0.5</span></button>
+                            <button onClick={forfeit} className={`link${commitForfeit ? " link--sure" : ""}`}><Flag size="3rem" /></button>
+                            {commitForfeit && <button onClick={() => setCommitForfeit(false)} className="link"><Cross size="1.5rem" /></button>}
                         </div>
                     }
                 </GameTimer>
@@ -40,7 +59,7 @@ type CapturedPiecesProps = {
     size: string
 }
 
-const CapturedPieces: React.FC<CapturedPiecesProps & PropsWithChildren> = ({ gameId, children, boardAlignment, size }) => {
+const CapturedPieces: React.FC<CapturedPiecesProps & PropsWithChildren> = memo(function CapturedPieces({ gameId, children, boardAlignment, size }) {
     const useChessStore = subscribeToGameStore(gameId);
     const capturedPieces = useChessStore(capturedPiecesSelector, shallow);
     return (
@@ -68,7 +87,7 @@ const CapturedPieces: React.FC<CapturedPiecesProps & PropsWithChildren> = ({ gam
             </div>
         </>
     );
-};
+});
 
 type GameTimerProps = {
     gameId: string
@@ -79,7 +98,7 @@ function parseTime(ms: number) {
     return new Date(ms).toISOString().slice(14, 19);
 }
 
-export const GameTimer: React.FC<GameTimerProps & PropsWithChildren> = ({ gameId, children, boardAlignment }) => {
+export const GameTimer: React.FC<GameTimerProps & PropsWithChildren> = memo(function GameTimer({ gameId, children, boardAlignment }) {
     const useChessStore = subscribeToGameStore(gameId);
     const [
         timeLeftWhite,
@@ -107,4 +126,4 @@ export const GameTimer: React.FC<GameTimerProps & PropsWithChildren> = ({ gameId
             <h2 className="panel-wrapper__time--lower">{parseTime(boardAlignment ? timeLeftWhite : timeLeftBlack)}</h2>
         </>
     );
-};
+});
