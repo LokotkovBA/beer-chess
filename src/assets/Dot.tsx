@@ -16,7 +16,7 @@ interface DotProps {
     blackColor?: string;
 }
 
-export const Dot: React.FC<DotProps> = ({ size, blackColor = "#34364C", id, moveIndex, coords, capturingPieceCoords, gameId }) => {
+export const Dot: React.FC<DotProps> = ({ size, blackColor = "var(--piece-color-black)", id, moveIndex, coords, capturingPieceCoords, gameId }) => {
     const { setNodeRef } = useDroppable({ id: id, data: { moveIndex, newCoords: coords } });
     const { data: secretName } = api.games.getSecretName.useQuery();
     const { mutate: updateGame } = api.games.update.useMutation();
