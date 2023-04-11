@@ -1,7 +1,9 @@
 .home-page {
-    margin: auto;
     display: flex;
+    justify-content: center;
+    align-items: center;
     gap: 2em;
+
 }
 
 .button-block {
@@ -9,6 +11,8 @@
     padding-top: 2em;
 
     &__button {
-        margin: 1em 0;
+        &--brb {
+            margin-top: 1em;
+        }
     }
 }

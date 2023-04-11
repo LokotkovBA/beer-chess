@@ -12,11 +12,11 @@ body {
 }
 
 :root {
-    --bg-color: #172554;
-    --bg2-color: #2563eb;
-    --link-hover-color: #1e3a8a;
-    --alert-color: #1e40af;
-    --text-color: #eff6ff;
+    --bg-color: #1e1b4b;
+    --bg2-color: #312e81;
+    --link-hover-color: #3730a3;
+    --alert-color: #4338ca;
+    --text-color: #eef2ff;
     --button-color: #4c1d95;
     --button-hover-color: #5b21b6;
     --red-color: #7f1d1d;
@@ -24,8 +24,10 @@ body {
     --red-text-color: #dc2626;
     --sure-color: #7c2d12;
     --sure-hover-color: #9a3412;
-    --tile-black: #48a9a6ff;
-    --tile-white: #f0fff1ff;
+    --tile-black: #4f46e5;
+    --tile-white: #e0e7ff;
+    --piece-color-white: #eef2ff;
+    --piece-color-black: #1e1b4b;
     color-scheme: light dark;
     font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen,
         Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
@@ -121,10 +123,10 @@ body {
 }
 
 @media (prefers-color-scheme: light) {
-    :root {
-        --bg-color: #ffffff;
-        --text-color: #213547;
-    }
+    // :root { todo
+    //     --bg-color: #ffffff;
+    //     --text-color: #213547;
+    // }
 }
 
 @media screen and (max-width: 80rem) {

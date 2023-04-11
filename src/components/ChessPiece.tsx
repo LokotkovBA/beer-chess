@@ -10,7 +10,6 @@ import { api } from "~/utils/api";
 type GenericChessPieceProps = {
     gameId: string,
     piece: PieceNotation,
-    size: string,
     coords: string,
     id: string,
     capturingPieceCoords: string,
@@ -21,14 +20,7 @@ type GenericChessPieceProps = {
     blackColor?: string
 }
 
-function getPieceColors(isWhite: boolean, whiteColor: string, blackColor: string) {
-    return {
-        bodyColor: isWhite ? whiteColor : blackColor,
-        outlineColor: isWhite ? blackColor : whiteColor
-    } as const;
-}
-
-const ChessPiece: React.FC<GenericChessPieceProps> = ({ gameId, piece, size, id, coords, moveIndex = -1, capturingPieceCoords, disabled = false, isLegal = false, whiteColor = "#F4F7FA", blackColor = "#34364C" }) => {
+const ChessPiece: React.FC<GenericChessPieceProps> = ({ gameId, piece, id, coords, moveIndex = -1, capturingPieceCoords, disabled = false, isLegal = false, whiteColor = "var(--piece-color-white)", blackColor = "var(--piece-color-black)" }) => {
     const useChessStore = subscribeToGameStore(gameId);
     const makeMove = useChessStore(pieceSelector);
     const { data: secretName } = api.games.getSecretName.useQuery();
@@ -40,7 +32,7 @@ const ChessPiece: React.FC<GenericChessPieceProps> = ({ gameId, piece, size, id,
             className={`chess-piece${disabled ? "" : " chess-piece--active"}${isDragging ? " chess-piece--dragging" : ""}${isLegal ? " chess-piece--capture" : ""}`}
             style={{ transform: CSS.Transform.toString(transform) }} role={role} tabIndex={tabIndex} ref={setNodeRef} {...listeners} >
             <div ref={setDroppable}>
-                <GenericPiece size={size} piece={piece} whiteColor={whiteColor} blackColor={blackColor} />
+                <GenericPiece piece={piece} whiteColor={whiteColor} blackColor={blackColor} />
             </div>
         </div>
     );
@@ -49,41 +41,41 @@ const ChessPiece: React.FC<GenericChessPieceProps> = ({ gameId, piece, size, id,
 export default ChessPiece;
 
 type GenericPieceProps = {
-    size: string,
+    size?: string,
     piece: string,
     whiteColor?: string,
     blackColor?: string
 }
 
-export const GenericPiece: React.FC<GenericPieceProps> = memo(function Piece({ piece, size, whiteColor = "#F4F7FA", blackColor = "#34364C" }) {
+export const GenericPiece: React.FC<GenericPieceProps> = memo(function Piece({ piece, size, whiteColor = "var(--piece-color-white)", blackColor = "var(--piece-color-black)" }) {
     return (
         <svg width={size} height={size} viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg" >
             {(() => {
                 switch (piece) {
                     case "K":
-                        return <King {...getPieceColors(true, whiteColor, blackColor)} />;
+                        return <King bodyColor={whiteColor} outlineColor={blackColor} />;
                     case "Q":
-                        return <Queen {...getPieceColors(true, whiteColor, blackColor)} />;
+                        return <Queen bodyColor={whiteColor} outlineColor={blackColor} />;
                     case "R":
-                        return <Rook {...getPieceColors(true, whiteColor, blackColor)} />;
+                        return <Rook bodyColor={whiteColor} outlineColor={blackColor} />;
                     case "N":
-                        return <Knight {...getPieceColors(true, whiteColor, blackColor)} />;
+                        return <Knight bodyColor={whiteColor} outlineColor={blackColor} />;
                     case "B":
-                        return <Bishop {...getPieceColors(true, whiteColor, blackColor)} />;
+                        return <Bishop bodyColor={whiteColor} outlineColor={blackColor} />;
                     case "P":
-                        return <Pawn {...getPieceColors(true, whiteColor, blackColor)} />;
+                        return <Pawn bodyColor={whiteColor} outlineColor={blackColor} />;
                     case "k":
-                        return <King {...getPieceColors(false, whiteColor, blackColor)} />;
+                        return <King bodyColor={blackColor} outlineColor={whiteColor} />;
                     case "q":
-                        return <Queen {...getPieceColors(false, whiteColor, blackColor)} />;
+                        return <Queen bodyColor={blackColor} outlineColor={whiteColor} />;
                     case "r":
-                        return <Rook {...getPieceColors(false, whiteColor, blackColor)} />;
+                        return <Rook bodyColor={blackColor} outlineColor={whiteColor} />;
                     case "n":
-                        return <Knight {...getPieceColors(false, whiteColor, blackColor)} />;
+                        return <Knight bodyColor={blackColor} outlineColor={whiteColor} />;
                     case "b":
-                        return <Bishop {...getPieceColors(false, whiteColor, blackColor)} />;
+                        return <Bishop bodyColor={blackColor} outlineColor={whiteColor} />;
                     case "p":
-                        return <Pawn {...getPieceColors(false, whiteColor, blackColor)} />;
+                        return <Pawn bodyColor={blackColor} outlineColor={whiteColor} />;
                     default:
                         return <div />;
                 }
