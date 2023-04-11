@@ -14,9 +14,15 @@ import GameInfoPanel from "~/components/GameInfoPanel";
 const RoomPage: NextPage<{ roomId: string, session: Session | null }> = ({ roomId }) => {
     const ctx = api.useContext();
     const { data: roomData } = api.rooms.get.useQuery({ roomId });
-    const { data: gameData } = api.games.getByRoomId.useQuery({ roomId });
+    const { data: gameData } = api.games.getByRoomId.useQuery({ roomId }, {
+        onSuccess: (data) => {
+            if (!data) {
+                setShowForm(true);
+            }
+        }
+    });
     const { data: sessionData } = useSession();
-    const [showForm, setShowForm] = useState(true);
+    const [showForm, setShowForm] = useState(false);
     const boardAlignment = sessionData?.user.uniqueName !== gameData?.blackUsername; // true - default board alignment
     useEffect(() => {
         if (roomData) {
@@ -28,6 +34,15 @@ const RoomPage: NextPage<{ roomId: string, session: Session | null }> = ({ roomI
             }
         };
     }, [roomId, roomData]);
+
+    useEffect(() => {
+        socket.on("game not found", () => {
+            setShowForm(true);
+        });
+        return () => {
+            socket.off("game not found");
+        };
+    }, []);
 
     useEffect(() => {
         socket.on(`${roomId} game ready`, () => {
