@@ -12,13 +12,13 @@ const Home: NextPage = () => {
                 <link rel="icon" href="/favicon.ico" />
             </Head>
             <article className="home-page">
-                <div>
+                <section className="home-page__section">
                     <h2>Сайт для пивных турниров <br />и расслабленной игры в шахматы</h2>
                     <div className="button-block">
-                        <button className="button-block__button button">Игра 1 на 1</button>
-                        <button className="button-block__button button button--brb">Создать турнир</button>
+                        <button className="button button-block__button">Игра 1 на 1</button>
+                        <button className="button button--brb button-block__button button-block__button--brb">Создать турнир</button>
                     </div>
-                </div>
+                </section>
                 <TileBoard addClass="chess-board--3d" size="2rem" />
 
             </article>
