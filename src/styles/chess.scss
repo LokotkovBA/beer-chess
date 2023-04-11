@@ -49,6 +49,45 @@
     margin: 1em auto;
 }
 
+.panel-wrapper {
+    margin: 1em .5em;
+    display: grid;
+    grid-template-rows: repeat(5, 1fr);
+    align-items: center;
+    height: 50ch;
+
+    &__pieces {
+        display: flex;
+        align-items: center;
+        font-size: 1.2rem;
+
+        &--upper {
+            grid-row: 1;
+        }
+
+        &--lower {
+            grid-row: 5;
+        }
+    }
+
+    &__actions {
+        grid-row: 3;
+        display: flex;
+        gap: .5em;
+    }
+
+    &__time {
+        &--upper {
+            grid-row: 2;
+        }
+
+        &--lower {
+            grid-row: 4;
+        }
+    }
+}
+
+
 .chess-board {
     &__row {
         display: flex;

@@ -2,7 +2,7 @@ html,
 body {
     padding: 0;
     margin: 0;
-    background-color: var(--background-color);
+    background-color: var(--bg-color);
     perspective: 900px;
 }
 
@@ -12,12 +12,15 @@ body {
 }
 
 :root {
-    --background-color: #242038FF;
-    --hover-color: #4E389488;
-    --alert-color: #4E3894FF;
-    --text-color: #F7ECE1FF;
-    --button-color: #4E3894FF;
-    --red-color: #8C1C13FF;
+    --bg-color: #172554;
+    --link-hover-color: #1e3a8a;
+    --alert-color: #1e40af;
+    --text-color: #eff6ff;
+    --button-color: #4c1d95;
+    --button-hover-color: #5b21b6;
+    --red-color: #7f1d1d;
+    --red-hover-color: #991b1b;
+
     --tile-black: #48a9a6ff;
     --tile-white: #f0fff1ff;
     color-scheme: light dark;
@@ -75,18 +78,26 @@ body {
     @include button-style(1.5rem, .5em, .9em, .5em, .2em);
     background-color: var(--button-color);
 
+    &:hover {
+        background-color: var(--button-hover-color);
+    }
+
     &--brb {
         background-color: var(--red-color);
+
+        &:hover {
+            background-color: var(--red-hover-color);
+        }
     }
 }
 
 .link {
     @include button-style(1.5rem, .2em, .5em, .5em, .2em);
-    background-color: var(--background-color);
+    background-color: var(--bg-color);
     text-decoration: none;
 
     &:hover {
-        background-color: var(--hover-color);
+        background-color: var(--link-hover-color);
     }
 }
 
@@ -98,7 +109,7 @@ body {
 
 .pop-up {
     position: absolute;
-    background-color: var(--background-color);
+    background-color: var(--bg-color);
     top: 2em;
     right: 25vw;
     padding: 1em;
@@ -112,7 +123,7 @@ body {
 
 @media (prefers-color-scheme: light) {
     :root {
-        --background-color: #ffffff;
+        --bg-color: #ffffff;
         --text-color: #213547;
     }
 }
