@@ -19,6 +19,11 @@ export function boardSelector(state: ChessState) { //selector for the entire boa
         unsubscribeFromMoves: state.unsubscribeFromMoves,
     } as const;
 }
+
+export function playersSelector(state: ChessState) {
+    return [state.playerWhite, state.playerBlack];
+}
+
 export function timerSelector(state: ChessState) {
     return [state.timeLeftWhite, state.timeLeftBlack, state.gameStatus, state.decrementTimer] as const;
 }

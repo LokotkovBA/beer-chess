@@ -1,8 +1,10 @@
 import React, { type PropsWithChildren, useEffect, useRef } from "react";
 import { shallow } from "zustand/shallow";
-import { capturedPiecesSelector, timerSelector } from "~/stores/game/selectors";
+import { capturedPiecesSelector, playersSelector, timerSelector } from "~/stores/game/selectors";
 import { subscribeToGameStore } from "~/stores/game/store";
 import { GenericPiece } from "./ChessPiece";
+import { useSession } from "next-auth/react";
+import Flag from "~/assets/Flag";
 
 type GameInfoPanelProps = {
     gameId: string
@@ -10,12 +12,24 @@ type GameInfoPanelProps = {
 }
 
 const GameInfoPanel: React.FC<GameInfoPanelProps> = ({ boardAlignment, gameId }) => {
+    const useChessStore = subscribeToGameStore(gameId);
+    const [playerWhite, playerBlack] = useChessStore(playersSelector);
+    const { data: sessionData } = useSession();
     return (
-        <CapturedPieces size="3rem" gameId={gameId} boardAlignment={boardAlignment}>
-            <GameTimer gameId={gameId} boardAlignment={boardAlignment}>
-                <div></div>
-            </GameTimer>
-        </CapturedPieces>
+        <div className="panel-wrapper">
+            <CapturedPieces size="3rem" gameId={gameId} boardAlignment={boardAlignment}>
+                <GameTimer gameId={gameId} boardAlignment={boardAlignment}>
+                    {
+                        (sessionData?.user.uniqueName === playerWhite || sessionData?.user.uniqueName === playerBlack)
+                        &&
+                        <div className="panel-wrapper__actions">
+                            <button className="link"><Flag size="3rem" /></button>
+                            <button className="link"><span className="icon-draw">0.5</span></button>
+                        </div>
+                    }
+                </GameTimer>
+            </CapturedPieces>
+        </div>
     );
 };
 export default GameInfoPanel;
@@ -30,26 +44,29 @@ const CapturedPieces: React.FC<CapturedPiecesProps & PropsWithChildren> = ({ gam
     const useChessStore = subscribeToGameStore(gameId);
     const capturedPieces = useChessStore(capturedPiecesSelector, shallow);
     return (
-        <div className="panel-wrapper">
-            {capturedPieces.filter(([piece,]) => boardAlignment ? (piece.toUpperCase() === piece) : (piece.toLowerCase() === piece)).map(([piece, count]) => {
-                return (
-                    <React.Fragment key={piece}>
-                        <GenericPiece key={piece} size={size} piece={piece} />
-                        {count > 1 && `x${count}`}
-                    </React.Fragment>
-                );
-            })}
-            <div style={{ width: size, height: size, display: "inline-block" }} />
+        <>
+            <div className="panel-wrapper__pieces panel-wrapper__pieces--upper">
+                {capturedPieces.filter(([piece,]) => boardAlignment ? (piece.toUpperCase() === piece) : (piece.toLowerCase() === piece)).map(([piece, count]) => {
+                    return (
+                        <React.Fragment key={piece}>
+                            <GenericPiece key={piece} size={size} piece={piece} />
+                            {count > 1 && `x${count}`}
+                        </React.Fragment>
+                    );
+                })}
+            </div>
             {children}
-            {capturedPieces.filter(([piece,]) => boardAlignment ? (piece.toLowerCase() === piece) : (piece.toUpperCase() === piece)).map(([piece, count]) => {
-                return (
-                    <React.Fragment key={piece}>
-                        <GenericPiece size={size} piece={piece} />
-                        {count > 1 && `X${count}`}
-                    </React.Fragment>
-                );
-            })}
-        </div>
+            <div className="panel-wrapper__pieces panel-wrapper__pieces--lower">
+                {capturedPieces.filter(([piece,]) => boardAlignment ? (piece.toLowerCase() === piece) : (piece.toUpperCase() === piece)).map(([piece, count]) => {
+                    return (
+                        <React.Fragment key={piece}>
+                            <GenericPiece size={size} piece={piece} />
+                            {count > 1 && `X${count}`}
+                        </React.Fragment>
+                    );
+                })}
+            </div>
+        </>
     );
 };
 
@@ -84,10 +101,10 @@ export const GameTimer: React.FC<GameTimerProps & PropsWithChildren> = ({ gameId
     }, [gameStatus, decrementTimer]);
 
     return (
-        <div>
-            <h2>{parseTime(boardAlignment ? timeLeftBlack : timeLeftWhite)}</h2>
+        <>
+            <h2 className="panel-wrapper__time--upper">{parseTime(boardAlignment ? timeLeftBlack : timeLeftWhite)}</h2>
             {children}
-            <h2>{parseTime(boardAlignment ? timeLeftWhite : timeLeftBlack)}</h2>
-        </div>
+            <h2 className="panel-wrapper__time--lower">{parseTime(boardAlignment ? timeLeftWhite : timeLeftBlack)}</h2>
+        </>
     );
 };

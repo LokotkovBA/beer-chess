@@ -50,11 +50,12 @@
 }
 
 .panel-wrapper {
-    margin: 1em .5em;
+    margin: auto .5em;
     display: grid;
+    gap: .2em;
     grid-template-rows: repeat(5, 1fr);
     align-items: center;
-    height: 50ch;
+    min-height: 30ch;
 
     &__pieces {
         display: flex;
@@ -62,10 +63,12 @@
         font-size: 1.2rem;
 
         &--upper {
+            align-self: flex-end;
             grid-row: 1;
         }
 
         &--lower {
+            align-self: flex-start;
             grid-row: 5;
         }
     }
@@ -78,13 +81,19 @@
 
     &__time {
         &--upper {
+            align-self: flex-end;
             grid-row: 2;
         }
 
         &--lower {
+            align-self: flex-start;
             grid-row: 4;
         }
     }
+}
+
+.icon-draw {
+    font-size: 2rem;
 }
 
 
