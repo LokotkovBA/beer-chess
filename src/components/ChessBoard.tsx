@@ -6,7 +6,7 @@ import { socket } from "~/server/gameServer";
 import ChessPiece, { GenericPiece } from "./ChessPiece";
 import { Dot } from "~/assets/Dot";
 import { subscribeToGameStore } from "~/stores/game/store";
-import { boardSelector } from "~/stores/game/selectors";
+import { boardSelector, moveSubSelector } from "~/stores/game/selectors";
 import { api } from "~/utils/api";
 import { useSession } from "next-auth/react";
 import { shallow } from "zustand/shallow";
@@ -50,23 +50,8 @@ const InteractiveBoard: React.FC<ChessBoardProps & { playerBoardRanks: number[],
     const { data: sessionData } = useSession();
     const { data: secretName } = api.games.getSecretName.useQuery();
     const useChessStore = subscribeToGameStore(gameId);
-    const {
-        playerWhite,
-        playerBlack,
-        allLegalMoves,
-        pieceMap,
-        pieceLegalMoves,
-        showPromotionMenu,
-        whiteTurn,
-        promoteData,
-        lastMoveFrom,
-        lastMoveTo,
-        canMove,
-        makeMove,
-        setPieceLegalMoves,
-        subscribeToMoves,
-        unsubscribeFromMoves
-    } = useChessStore(boardSelector, shallow);
+    const gameState = useChessStore(boardSelector, shallow);
+    const [subscribeToMoves, unsubscribeFromMoves] = useChessStore(moveSubSelector, shallow);
     useEffect(() => {
         socket.emit("join game", ({ gameId }));
         return () => {
@@ -85,13 +70,13 @@ const InteractiveBoard: React.FC<ChessBoardProps & { playerBoardRanks: number[],
         if (!event.over || !secretName) return;
         const { coords: oldCoords } = z.object({ coords: z.string() }).parse(event.active.data.current);
         const { moveIndex, newCoords } = z.object({ moveIndex: z.number(), newCoords: z.string() }).parse(event.over.data.current);
-        makeMove(moveIndex, oldCoords, newCoords, socket, secretName, gameId, updateGame);
+        gameState.makeMove(moveIndex, oldCoords, newCoords, socket, secretName, gameId, updateGame);
     }
 
     function onDragStart(event: DragStartEvent) {
-        if (!canMove()) return;
+        if (!gameState.canMove()) return;
         const { coords } = z.object({ coords: z.string() }).parse(event.active.data.current);
-        setPieceLegalMoves(allLegalMoves.filter((move) => move[0]?.includes(coords)));
+        gameState.setPieceLegalMoves(gameState.allLegalMoves.filter((move) => move[0]?.includes(coords)));
     }
     return (
         <div className="game-wrapper">
@@ -101,11 +86,11 @@ const InteractiveBoard: React.FC<ChessBoardProps & { playerBoardRanks: number[],
                     {playerBoardRanks.map((rank) => {
                         const files = playerBoardFiles.map((file) => {
                             const tileId = `${file}${rank}`;
-                            const curPiece = pieceMap?.get(tileId);
-                            const isLastMove = tileId === lastMoveFrom || tileId === lastMoveTo;
+                            const curPiece = gameState.pieceMap?.get(tileId);
+                            const isLastMove = tileId === gameState.lastMoveFrom || tileId === gameState.lastMoveTo;
                             let moveIndex = -1;
                             let capturingPieceCoords = "";
-                            const isLegal = pieceLegalMoves.reduce((prevIsLegal, elem, index) => {
+                            const isLegal = gameState.pieceLegalMoves.reduce((prevIsLegal, elem, index) => {
                                 if (elem[0]?.slice(2).includes(`${file}${rank}`)) {
                                     moveIndex = index;
                                     capturingPieceCoords = elem[0].slice(0, 2);
@@ -114,8 +99,8 @@ const InteractiveBoard: React.FC<ChessBoardProps & { playerBoardRanks: number[],
                                 return prevIsLegal;
                             }, false);
                             if (curPiece) {
-                                const disabled = !((sessionData?.user.uniqueName === playerWhite && whiteTurn && curPiece.toUpperCase() === curPiece) ||
-                                    (sessionData?.user.uniqueName === playerBlack && !whiteTurn && curPiece.toLowerCase() === curPiece));
+                                const disabled = !((sessionData?.user.uniqueName === gameState.playerWhite && gameState.whiteTurn && curPiece.toUpperCase() === curPiece) ||
+                                    (sessionData?.user.uniqueName === gameState.playerBlack && !gameState.whiteTurn && curPiece.toLowerCase() === curPiece));
                                 const pieceId = `${curPiece}${file}${rank}`;
                                 return (
                                     <EmptyTile isLastMove={isLastMove} key={tileId} isLegal={isLegal}>
@@ -140,7 +125,7 @@ const InteractiveBoard: React.FC<ChessBoardProps & { playerBoardRanks: number[],
                     })}
                 </div>
             </DndContext>
-            {showPromotionMenu && <PromotionMenu promoteData={promoteData} isWhite={whiteTurn} size={size} gameId={gameId} />}
+            {gameState.showPromotionMenu && <PromotionMenu promoteData={gameState.promoteData} isWhite={gameState.whiteTurn} size={size} gameId={gameId} />}
         </div>
     );
 };

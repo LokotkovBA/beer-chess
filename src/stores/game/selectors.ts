@@ -12,16 +12,20 @@ export function boardSelector(state: ChessState) { //selector for the entire boa
         promoteData: state.promoteData,
         lastMoveFrom: state.lastMoveFrom,
         lastMoveTo: state.lastMoveTo,
+        gameStatus: state.gameStatus,
         canMove: state.canMove,
         setPieceLegalMoves: state.setPieceLegalMoves,
-        makeMove: state.makeMove,
-        subscribeToMoves: state.subscribeToMoves,
-        unsubscribeFromMoves: state.unsubscribeFromMoves,
+        makeMove: state.makeMove
     } as const;
 }
 
+
+export function moveSubSelector(state: ChessState) {
+    return [state.subscribeToMoves, state.unsubscribeFromMoves] as const;
+}
+
 export function playersSelector(state: ChessState) {
-    return [state.playerWhite, state.playerBlack];
+    return [state.playerWhite, state.playerBlack] as const;
 }
 
 export function timerSelector(state: ChessState) {
