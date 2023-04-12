@@ -10,7 +10,7 @@ import { socket } from "~/server/gameServer";
 import { toast } from "react-hot-toast";
 import { type GameStatus } from "@prisma/client";
 import { type PositionStatus } from "~/stores/game/types";
-import { Check, CircledCross, Cross } from "~/assets/Choise";
+import { Check, CircledCross, Cross } from "~/assets/ChoiceIcons";
 
 type GameInfoPanelProps = {
     gameId: string
