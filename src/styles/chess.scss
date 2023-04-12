@@ -103,6 +103,19 @@
     font-size: 3rem;
 }
 
+.endgame-message {
+    display: grid;
+    gap: .5em;
+
+    &__button {
+        justify-content: center;
+    }
+
+    &__heading {
+        font-weight: 400;
+    }
+}
+
 
 .chess-board {
     &__row {

@@ -1,6 +1,6 @@
 import React, { type PropsWithChildren, useEffect, useRef, useState, memo } from "react";
 import { shallow } from "zustand/shallow";
-import { capturedPiecesSelector, playersSelector, timerSelector } from "~/stores/game/selectors";
+import { capturedPiecesSelector, gameStatusSelector, playersSelector, timerSelector } from "~/stores/game/selectors";
 import { subscribeToGameStore } from "~/stores/game/store";
 import { GenericPiece } from "./ChessPiece";
 import { useSession } from "next-auth/react";
@@ -9,6 +9,8 @@ import { api } from "~/utils/api";
 import { socket } from "~/server/gameServer";
 import { toast } from "react-hot-toast";
 import Cross from "~/assets/Cross";
+import { type GameStatus } from "@prisma/client";
+import { type PositionStatus } from "~/stores/game/types";
 
 type GameInfoPanelProps = {
     gameId: string
@@ -18,10 +20,76 @@ type GameInfoPanelProps = {
 const GameInfoPanel: React.FC<GameInfoPanelProps> = ({ boardAlignment, gameId }) => {
     const useChessStore = subscribeToGameStore(gameId);
     const [playerWhite, playerBlack] = useChessStore(playersSelector);
-    const [commitForfeit, setCommitForfeit] = useState(false);
-    const { data: sessionData } = useSession();
-    const { data: secretName } = api.games.getSecretName.useQuery();
+    const [gameStatus, positionStatus] = useChessStore(gameStatusSelector);
 
+    const { data: sessionData } = useSession();
+    return (
+        <div className="panel-wrapper">
+            <CapturedPieces size="3rem" gameId={gameId} boardAlignment={boardAlignment}>
+                <GameTimer gameId={gameId} boardAlignment={boardAlignment}>
+                    {
+                        (sessionData?.user.uniqueName === playerWhite || sessionData?.user.uniqueName === playerBlack)
+                            ?
+                            <div className="panel-wrapper__actions">
+                                <ActionsPanel gameId={gameId} />
+                            </div>
+                            :
+                            <h3>
+                                {getEndgameMessage(gameStatus, positionStatus)}
+                            </h3>
+                    }
+                </GameTimer>
+            </CapturedPieces>
+        </div>
+    );
+};
+export default GameInfoPanel;
+
+type GameStatusPanelProps = {
+    gameId: string,
+}
+
+function getEndgameMessage(gameStatus: GameStatus, positionStatus: PositionStatus) {
+    let message = "";
+    switch (gameStatus) {
+        case "TIE":
+            message = "Ничья";
+            break;
+        case "BLACKWON":
+            message = "Победа чёрных";
+            break;
+        case "WHITEWON":
+            message = "Победа белых";
+            break;
+        case "INITIALIZING":
+            return "Игра вот вот начнётся";
+        case "FM":
+        case "STARTED":
+            return "Игра в процессе";
+    }
+    switch (positionStatus) {
+        case "STALEMATE":
+            message = `Пат • ${message}`;
+            break;
+        case "CHECKMATE":
+            message = `Мат • ${message}`;
+            break;
+        case "DEAD":
+            message = `Мёртвая позиция • ${message}`;
+            break;
+        default:
+            message = `Игра окончена • ${message}`;
+            break;
+    }
+    return message;
+}
+
+const ActionsPanel: React.FC<GameStatusPanelProps> = ({ gameId }) => {
+    const useChessStore = subscribeToGameStore(gameId);
+    const [gameStatus, positionStatus] = useChessStore(gameStatusSelector);
+    const [commitForfeit, setCommitForfeit] = useState(false);
+    const [endgameMessage, setEndgameMessage] = useState("");
+    const { data: secretName } = api.games.getSecretName.useQuery();
     function forfeit() {
         if (commitForfeit) {
             socket.emit("forfeit", { gameId, secretName });
@@ -33,25 +101,32 @@ const GameInfoPanel: React.FC<GameInfoPanelProps> = ({ boardAlignment, gameId })
         socket.emit("suggest draw", { gameId, secretName });
         toast.success("Предложение отправлено");
     }
+    useEffect(() => {
+        if (gameStatus !== "BLACKWON" && gameStatus !== "TIE" && gameStatus !== "WHITEWON") return;
+        setEndgameMessage(getEndgameMessage(gameStatus, positionStatus));
+    }, [gameStatus, positionStatus]);
+    switch (gameStatus) {
+        case "INITIALIZING":
+        case "FM":
+        case "STARTED":
+            return (
+                <>
+                    <button onClick={suggestDraw} className="link"><span className="icon-draw">½</span></button>
+                    <button onClick={forfeit} className={`link${commitForfeit ? " link--sure" : ""}`}><Flag size="3rem" /></button>
+                    {commitForfeit && <button onClick={() => setCommitForfeit(false)} className="link"><Cross size="1.5rem" /></button>}
+                </>
+            );
+        default:
+            break;
+    }
+
     return (
-        <div className="panel-wrapper">
-            <CapturedPieces size="3rem" gameId={gameId} boardAlignment={boardAlignment}>
-                <GameTimer gameId={gameId} boardAlignment={boardAlignment}>
-                    {
-                        (sessionData?.user.uniqueName === playerWhite || sessionData?.user.uniqueName === playerBlack)
-                        &&
-                        <div className="panel-wrapper__actions">
-                            <button onClick={suggestDraw} className="link"><span className="icon-draw">½</span></button>
-                            <button onClick={forfeit} className={`link${commitForfeit ? " link--sure" : ""}`}><Flag size="3rem" /></button>
-                            {commitForfeit && <button onClick={() => setCommitForfeit(false)} className="link"><Cross size="1.5rem" /></button>}
-                        </div>
-                    }
-                </GameTimer>
-            </CapturedPieces>
-        </div>
+        <section className="endgame-message">
+            <h3 className="endgame-message__heading">{endgameMessage}</h3>
+            <button className="button endgame-message__button">Реванш</button>
+        </section>
     );
 };
-export default GameInfoPanel;
 
 type CapturedPiecesProps = {
     gameId: string

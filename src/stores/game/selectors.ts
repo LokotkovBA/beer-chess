@@ -12,13 +12,15 @@ export function boardSelector(state: ChessState) { //selector for the entire boa
         promoteData: state.promoteData,
         lastMoveFrom: state.lastMoveFrom,
         lastMoveTo: state.lastMoveTo,
-        gameStatus: state.gameStatus,
         canMove: state.canMove,
         setPieceLegalMoves: state.setPieceLegalMoves,
         makeMove: state.makeMove
     } as const;
 }
 
+export function gameStatusSelector(state: ChessState) {
+    return [state.gameStatus, state.positionStatus] as const;
+}
 
 export function moveSubSelector(state: ChessState) {
     return [state.subscribeToMoves, state.unsubscribeFromMoves] as const;
