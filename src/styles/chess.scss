@@ -29,11 +29,11 @@
     }
 
     &--last-move {
-        background-color: rgba(16, 129, 21, 0.61);
+        background-color: var(--move-color);
     }
 
     &--capture {
-        background-color: #34364C;
+        background-color: var(--piece-color-black);
     }
 }
 
