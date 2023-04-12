@@ -59,7 +59,7 @@ export const CreationForm: React.FC<{ roomId: string }> = ({ roomId }) => {
             <fieldset>
                 <legend>Choose a side</legend>
                 <label htmlFor="white"><GenericPiece size="5rem" piece="K" /></label>
-                <input name="color" value="isWhite" id="white" type="radio" ref={isWhite} />
+                <input name="color" value="isWhite" id="white" type="radio" defaultChecked={true} ref={isWhite} />
                 <label htmlFor="black"><GenericPiece size="5rem" piece="k" /></label>
                 <input name="color" value="isBlack" id="black" type="radio" />
             </fieldset>
