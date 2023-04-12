@@ -11,7 +11,7 @@ import { type PieceCoordinates } from "~/utils/PieceNotation";
 type GameUpdateType = AppRouter["games"]["update"];
 type PositionUseMutationFunction = UseMutateFunction<inferProcedureOutput<GameUpdateType>, TRPCClientErrorLike<GameUpdateType>, inferProcedureInput<GameUpdateType>, unknown>;
 
-export type PositionStatus = "PLAYABLE" | "STALEMATE" | "CHECK" | "CHECKMATE" | "DEAD" | "ERROR";
+export type PositionStatus = "PLAYABLE" | "STALEMATE" | "CHECK" | "CHECKMATE" | "DEAD" | "ERROR" | "FORFEIT";
 export type ChessState = {
     playerWhite: string,
     playerBlack: string,
@@ -39,7 +39,7 @@ export type ChessState = {
     unsubscribeFromMoves: (socket: Socket, gameId: string) => void,
 }
 
-const positionStatusValues = ["PLAYABLE", "STALEMATE", "CHECK", "CHECKMATE", "DEAD", "ERROR"];
+const positionStatusValues = ["PLAYABLE", "STALEMATE", "CHECK", "CHECKMATE", "DEAD", "ERROR", "FORFEIT"];
 export function isPositionStatus(value: string): value is PositionStatus {
     return positionStatusValues.includes(value);
 }

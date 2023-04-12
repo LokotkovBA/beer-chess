@@ -77,6 +77,9 @@ function getEndgameMessage(gameStatus: GameStatus, positionStatus: PositionStatu
         case "DEAD":
             message = `Мёртвая позиция • ${message}`;
             break;
+        case "FORFEIT":
+            message = `Игрок сдался • ${message}`;
+            break;
         default:
             message = `Игра окончена • ${message}`;
             break;
