@@ -59,7 +59,7 @@
     margin: auto 0;
     display: grid;
     gap: .2em;
-    grid-template-rows: repeat(5, 1fr);
+    grid-template-rows: 1.1fr .5fr 2fr .5fr 1.1fr;
     align-items: center;
     min-height: 30ch;
     min-width: 24ch;
@@ -99,7 +99,7 @@
     }
 }
 
-.icon-draw {
+.icon-tie {
     font-size: 3rem;
 }
 

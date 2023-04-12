@@ -1,4 +1,4 @@
-import React, { type PropsWithChildren, useEffect, useRef, useState, memo } from "react";
+import React, { type PropsWithChildren, useEffect, useRef, useState, memo, useMemo } from "react";
 import { shallow } from "zustand/shallow";
 import { capturedPiecesSelector, gameStatusSelector, playersSelector, timerSelector } from "~/stores/game/selectors";
 import { subscribeToGameStore } from "~/stores/game/store";
@@ -8,9 +8,9 @@ import Flag from "~/assets/Flag";
 import { api } from "~/utils/api";
 import { socket } from "~/server/gameServer";
 import { toast } from "react-hot-toast";
-import Cross from "~/assets/Cross";
 import { type GameStatus } from "@prisma/client";
 import { type PositionStatus } from "~/stores/game/types";
+import { Check, CircledCross, Cross } from "~/assets/Choise";
 
 type GameInfoPanelProps = {
     gameId: string
@@ -92,31 +92,48 @@ const ActionsPanel: React.FC<GameStatusPanelProps> = ({ gameId }) => {
     const [gameStatus, positionStatus] = useChessStore(gameStatusSelector);
     const [commitForfeit, setCommitForfeit] = useState(false);
     const [endgameMessage, setEndgameMessage] = useState("");
+    const [suggestReceived, setSuggestReceived] = useState(false);
     const { data: secretName } = api.games.getSecretName.useQuery();
+    const socketMessage = useMemo(() => ({ gameId, secretName }), [gameId, secretName]);
     function forfeit() {
         if (commitForfeit) {
-            socket.emit("forfeit", { gameId, secretName });
+            socket.emit("forfeit", socketMessage);
         }
         setCommitForfeit(true);
     }
 
-    function suggestDraw() {
-        socket.emit("suggest draw", { gameId, secretName });
+    function suggestTie() {
+        socket.emit("suggest tie", socketMessage);
         toast.success("Предложение отправлено");
     }
     useEffect(() => {
         if (gameStatus !== "BLACKWON" && gameStatus !== "TIE" && gameStatus !== "WHITEWON") return;
         setEndgameMessage(getEndgameMessage(gameStatus, positionStatus));
     }, [gameStatus, positionStatus]);
+
+    useEffect(() => {
+        socket.on(`${gameId} suggest tie`, () => {
+            setSuggestReceived(true);
+        });
+        return () => {
+            socket.off(`${gameId} suggest tie`);
+        };
+    }, [gameId]);
     switch (gameStatus) {
         case "INITIALIZING":
         case "FM":
         case "STARTED":
-            return (
+            return (suggestReceived ?
                 <>
-                    <button onClick={suggestDraw} className="link"><span className="icon-draw">½</span></button>
-                    <button onClick={forfeit} className={`link${commitForfeit ? " link--sure" : ""}`}><Flag size="3rem" /></button>
-                    {commitForfeit && <button onClick={() => setCommitForfeit(false)} className="link"><Cross size="1.5rem" /></button>}
+                    <h3>Ничья?</h3>
+                    <button type="button" className="link" onClick={() => socket.emit("tie", socketMessage)}><Check size="1.5rem" /></button>
+                    <button type="button" className="link" onClick={() => setSuggestReceived(false)}><Cross size="1.5rem" /></button>
+                </>
+                :
+                <>
+                    <button type="button" onClick={suggestTie} className="link" title="Предложить ничью"><span className="icon-tie">½</span></button>
+                    <button type="button" onClick={forfeit} className={`link${commitForfeit ? " link--sure" : ""}`}><Flag size="3rem" /></button>
+                    {commitForfeit && <button onClick={() => setCommitForfeit(false)} className="link"><CircledCross size="1.5rem" /></button>}
                 </>
             );
         default:
