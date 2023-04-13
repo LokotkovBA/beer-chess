@@ -19,7 +19,7 @@ const Home: NextPage = () => {
                         <button className="button button--brb button-block__button button-block__button--brb">Создать турнир</button>
                     </div>
                 </section>
-                <TileBoard addClass="chess-board--3d" size="2.5rem" />
+                <TileBoard size="2.5rem" />
 
             </article>
         </>

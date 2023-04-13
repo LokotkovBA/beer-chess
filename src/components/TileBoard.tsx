@@ -3,14 +3,13 @@ import { useRef } from "react";
 type TileBoardProps = {
     size?: string,
     ranks?: number[],
-    files?: string[],
-    addClass?: string
+    files?: string[]
 }
 
-const TileBoard: React.FC<TileBoardProps> = ({ ranks = [8, 7, 6, 5, 4, 3, 2, 1], files = ["a", "b", "c", "d", "e", "f", "g", "h"], addClass, size = "5rem" }) => {
+const TileBoard: React.FC<TileBoardProps> = ({ ranks = [8, 7, 6, 5, 4, 3, 2, 1], files = ["a", "b", "c", "d", "e", "f", "g", "h"], size = "5rem" }) => {
     const curColor = useRef<TileColor>("black");
     return (
-        <div style={{ fontSize: size }} className={`chess-board${addClass ? " " + addClass : ""}`}>
+        <div style={{ fontSize: size }} className="chess-board">
             {ranks.map((rank) => {
                 const completeRank = files.map((file) => {
                     curColor.current = reverseTileColor(curColor.current);
