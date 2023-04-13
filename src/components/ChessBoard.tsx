@@ -41,7 +41,7 @@ export const ChessBoard: React.FC<ChessBoardProps> = memo(function ChessBoard({ 
 
     return (
         <InteractiveBoard gameId={gameId} size={size} playerBoardRanks={playerBoardRanks} playerBoardFiles={playerBoardFiles}>
-            <TileBoard ranks={playerBoardRanks} files={playerBoardFiles} />
+            <TileBoard size={size} ranks={playerBoardRanks} files={playerBoardFiles} />
         </InteractiveBoard>
     );
 });
