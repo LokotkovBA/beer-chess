@@ -79,7 +79,7 @@ const InteractiveBoard: React.FC<ChessBoardProps & { playerBoardRanks: number[],
         gameState.setPieceLegalMoves(gameState.allLegalMoves.filter((move) => move[0]?.includes(coords)));
     }
     return (
-        <div className="game-wrapper">
+        <div className="game-wrapper" onClick={() => gameState.setPieceLegalMoves([])}>
             {children}
             <DndContext onDragEnd={onDragEnd} onDragStart={onDragStart}>
                 <div className="chess-board chess-board--pieces">
