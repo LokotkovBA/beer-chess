@@ -14,19 +14,30 @@
     }
 }
 
-.chess-tile {
-    box-sizing: content-box;
-    padding: .5em;
-    height: 5rem;
-    width: 5rem;
+@mixin checkeredColors($attribute) {
+    &--white {
+        #{$attribute}: var(--tile-white)
+    }
 
     &--black {
-        background-color: var(--tile-black)
+        #{$attribute}: var(--tile-black)
     }
+}
 
-    &--white {
-        background-color: var(--tile-white)
-    }
+@mixin tileSize($size, $padding) {
+    width: $size;
+    height: $size;
+    padding: $padding;
+}
+
+@mixin tileText {
+    font-size: .3em;
+    line-height: 1.1em;
+}
+
+.chess-tile {
+    @include checkeredColors(background-color);
+    @include tileSize(1em, .1em);
 
     &--last-move {
         background-color: var(--move-color);
@@ -34,6 +45,39 @@
 
     &--capture {
         background-color: var(--piece-color-black);
+    }
+
+    &__rank {
+        @include checkeredColors(color);
+        @include tileText();
+
+    }
+
+    &__file {
+        @include checkeredColors(color);
+        @include tileText();
+    }
+}
+
+.ranks {
+    position: absolute;
+    transform: translateY(-100%);
+
+    &__chess-tile {
+        @include tileSize(1.1em, .05em);
+    }
+}
+
+.files {
+    position: absolute;
+    transform: translateY(-100%);
+    display: flex;
+
+    &__chess-tile {
+        @include tileSize(1.1em, .05em);
+        display: flex;
+        align-items: flex-end;
+        justify-content: flex-end;
     }
 }
 

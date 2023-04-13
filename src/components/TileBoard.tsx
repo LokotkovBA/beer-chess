@@ -7,25 +7,48 @@ type TileBoardProps = {
     addClass?: string
 }
 
-const TileBoard: React.FC<TileBoardProps> = ({ ranks = [1, 2, 3, 4, 5, 6, 7, 8], files = ["a", "b", "c", "d", "e", "f", "g", "h"], addClass, size }) => {
-    const curColor = useRef("black");
+const TileBoard: React.FC<TileBoardProps> = ({ ranks = [8, 7, 6, 5, 4, 3, 2, 1], files = ["a", "b", "c", "d", "e", "f", "g", "h"], addClass, size = "5rem" }) => {
+    const curColor = useRef<TileColor>("black");
     return (
-        <div className={`chess-board${addClass ? " " + addClass : ""}`}>
-            {ranks.map(rank => {
-                const entireRank = files.map(file => {
-                    curColor.current = curColor.current === "white" ? "black" : "white";
+        <div style={{ fontSize: size }} className={`chess-board${addClass ? " " + addClass : ""}`}>
+            {ranks.map((rank) => {
+                const completeRank = files.map((file) => {
+                    curColor.current = reverseTileColor(curColor.current);
                     const tileId = `${file}${rank}`;
-                    return <Tile size={size} key={tileId} color={curColor.current} />;
+
+                    return <Tile key={tileId} color={curColor.current} />;
                 });
-                curColor.current = curColor.current === "white" ? "black" : "white";
-                return <div key={rank} className="chess-board__row">{entireRank}</div>;
+                curColor.current = reverseTileColor(curColor.current);
+                return <div key={rank} className="chess-board__row">{completeRank}</div>;
             })}
+            <div className="ranks">
+                {ranks.map((rank) => {
+                    curColor.current = reverseTileColor(curColor.current);
+                    return <div key={rank} className="chess-tile ranks__chess-tile">
+                        <p className={`chess-tile__rank chess-tile__rank--${reverseTileColor(curColor.current)}`}>{rank}</p>
+                    </div>;
+                })}
+            </div>
+            <div className="files">
+                {files.map((file) => {
+                    curColor.current = reverseTileColor(curColor.current);
+                    return <div key={file} className="chess-tile files__chess-tile">
+                        <p className={`chess-tile__file chess-tile__file--${curColor.current}`}>{file}</p>
+                    </div>;
+                })}
+            </div>
         </div>
     );
 };
 
-const Tile: React.FC<{ color: string, size?: string }> = ({ color = "black", size }) => {
-    return <div style={{ width: size, height: size }} className={`chess-tile chess-tile--${color}`} />;
+type TileColor = "white" | "black"
+
+function reverseTileColor(color: TileColor) {
+    return color === "white" ? "black" : "white";
+}
+
+const Tile: React.FC<{ color: string }> = ({ color = "black" }) => {
+    return <div className={`chess-tile chess-tile--${color}`} />;
 };
 
 export default TileBoard;

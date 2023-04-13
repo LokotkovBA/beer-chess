@@ -82,7 +82,7 @@ const InteractiveBoard: React.FC<ChessBoardProps & { playerBoardRanks: number[],
         <div className="game-wrapper" onClick={() => gameState.setPieceLegalMoves([])}>
             {children}
             <DndContext onDragEnd={onDragEnd} onDragStart={onDragStart}>
-                <div className="chess-board chess-board--pieces">
+                <div style={{ fontSize: size }} className="chess-board chess-board--pieces">
                     {playerBoardRanks.map((rank) => {
                         const files = playerBoardFiles.map((file) => {
                             const tileId = `${file}${rank}`;
