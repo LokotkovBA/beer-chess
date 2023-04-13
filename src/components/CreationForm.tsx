@@ -45,8 +45,17 @@ export const CreationForm: React.FC<{ roomId: string }> = ({ roomId }) => {
 
     function onSubmit(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
-        if (isReady && titleRef.current && isWhite.current && inviteeUsername.current?.value) {
-            createGame({ title: titleRef.current.value, maxTime: 10 * 60 * 1000, roomId, timeRule: "10/3", isWhite: isWhite.current.checked, inviteeUsername: inviteeUsername.current.value });
+        if (isReady && titleRef.current && sessionData && isWhite.current && inviteeUsername.current?.value) {
+            let whiteUsername = "";
+            let blackUsername = "";
+            if (isWhite.current.value) {
+                whiteUsername = sessionData.user.uniqueName;
+                blackUsername = inviteeUsername.current.value;
+            } else {
+                whiteUsername = inviteeUsername.current.value;
+                blackUsername = sessionData.user.uniqueName;
+            }
+            createGame({ title: titleRef.current.value, maxTime: 10 * 60 * 1000, roomId, timeRule: "10/3", whiteUsername, blackUsername });
         }
     }
 

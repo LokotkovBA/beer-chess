@@ -13,11 +13,12 @@ import { type PositionStatus } from "~/stores/game/types";
 import { Check, CircledCross, Cross } from "~/assets/ChoiceIcons";
 
 type GameInfoPanelProps = {
-    gameId: string
-    boardAlignment: boolean
+    gameId: string,
+    boardAlignment: boolean,
+    roomId: string
 }
 
-const GameInfoPanel: React.FC<GameInfoPanelProps> = ({ boardAlignment, gameId }) => {
+const GameInfoPanel: React.FC<GameInfoPanelProps> = ({ boardAlignment, gameId, roomId }) => {
     const useChessStore = subscribeToGameStore(gameId);
     const [playerWhite, playerBlack] = useChessStore(playersSelector);
     const [gameStatus, positionStatus] = useChessStore(gameStatusSelector);
@@ -31,7 +32,7 @@ const GameInfoPanel: React.FC<GameInfoPanelProps> = ({ boardAlignment, gameId })
                         (sessionData?.user.uniqueName === playerWhite || sessionData?.user.uniqueName === playerBlack)
                             ?
                             <div className="panel-wrapper__actions">
-                                <ActionsPanel gameId={gameId} />
+                                <ActionsPanel roomId={roomId} gameId={gameId} />
                             </div>
                             :
                             <h3>
@@ -44,10 +45,6 @@ const GameInfoPanel: React.FC<GameInfoPanelProps> = ({ boardAlignment, gameId })
     );
 };
 export default GameInfoPanel;
-
-type GameStatusPanelProps = {
-    gameId: string,
-}
 
 function getEndgameMessage(gameStatus: GameStatus, positionStatus: PositionStatus) {
     let message = "";
@@ -87,11 +84,26 @@ function getEndgameMessage(gameStatus: GameStatus, positionStatus: PositionStatu
     return message;
 }
 
-const ActionsPanel: React.FC<GameStatusPanelProps> = ({ gameId }) => {
+function isPlaying(gameStatus: GameStatus) {
+    switch (gameStatus) {
+        case "INITIALIZING":
+        case "FM":
+        case "STARTED":
+            return true;
+        default:
+            return false;
+    }
+}
+
+type ActionsPanelProps = {
+    gameId: string,
+    roomId: string
+}
+
+const ActionsPanel: React.FC<ActionsPanelProps> = ({ gameId, roomId }) => {
     const useChessStore = subscribeToGameStore(gameId);
     const [gameStatus, positionStatus] = useChessStore(gameStatusSelector);
     const [commitForfeit, setCommitForfeit] = useState(false);
-    const [endgameMessage, setEndgameMessage] = useState("");
     const [suggestReceived, setSuggestReceived] = useState(false);
     const { data: secretName } = api.games.getSecretName.useQuery();
     const socketMessage = useMemo(() => ({ gameId, secretName }), [gameId, secretName]);
@@ -106,45 +118,96 @@ const ActionsPanel: React.FC<GameStatusPanelProps> = ({ gameId }) => {
         socket.emit("suggest tie", socketMessage);
         toast.success("Предложение отправлено");
     }
-    useEffect(() => {
-        if (gameStatus !== "BLACKWON" && gameStatus !== "TIE" && gameStatus !== "WHITEWON") return;
-        setEndgameMessage(getEndgameMessage(gameStatus, positionStatus));
-    }, [gameStatus, positionStatus]);
 
     useEffect(() => {
-        socket.on(`${gameId} suggest tie`, () => {
+        socket.on(`${gameId} request`, () => {
             setSuggestReceived(true);
         });
         return () => {
-            socket.off(`${gameId} suggest tie`);
+            socket.off(`${gameId} request`);
         };
     }, [gameId]);
-    switch (gameStatus) {
-        case "INITIALIZING":
-        case "FM":
-        case "STARTED":
-            return (suggestReceived ?
-                <>
-                    <h3>Ничья?</h3>
-                    <button type="button" className="link" onClick={() => socket.emit("tie", socketMessage)}><Check size="1.5rem" /></button>
-                    <button type="button" className="link" onClick={() => setSuggestReceived(false)}><Cross size="1.5rem" /></button>
-                </>
-                :
-                <>
-                    <button type="button" onClick={suggestTie} className="link" title="Предложить ничью"><span className="icon-tie">½</span></button>
-                    <button type="button" onClick={forfeit} className={`link${commitForfeit ? " link--sure" : ""}`}><Flag size="3rem" /></button>
-                    {commitForfeit && <button onClick={() => setCommitForfeit(false)} className="link"><CircledCross size="1.5rem" /></button>}
-                </>
-            );
-        default:
-            break;
+
+    function acceptTie() {
+        socket.emit("tie", socketMessage);
+        setSuggestReceived(false);
+    }
+
+    if (isPlaying(gameStatus)) {
+        return (suggestReceived ?
+            <>
+                <h3>Ничья?</h3>
+                <button type="button" className="link" onClick={acceptTie}><Check size="1.5rem" /></button>
+                <button type="button" className="link" onClick={() => setSuggestReceived(false)}><Cross size="1.5rem" /></button>
+            </>
+            :
+            <>
+                <button type="button" onClick={suggestTie} className="link" title="Предложить ничью"><span className="icon-tie">½</span></button>
+                <button type="button" onClick={forfeit} className={`link${commitForfeit ? " link--sure" : ""}`}><Flag size="3rem" /></button>
+                {commitForfeit && <button onClick={() => setCommitForfeit(false)} className="link"><CircledCross size="1.5rem" /></button>}
+            </>
+        );
+    }
+
+    if (suggestReceived) {
+        return <RematchDialog gameId={gameId} roomId={roomId} changeVisibility={setSuggestReceived} />;
     }
 
     return (
-        <section className="endgame-message">
-            <h3 className="endgame-message__heading">{endgameMessage}</h3>
-            <button className="button endgame-message__button">Реванш</button>
-        </section>
+        <div className="endgame-message">
+            <h3 className="endgame-message__heading">{getEndgameMessage(gameStatus, positionStatus)}</h3>
+            <button onClick={() => socket.emit("rematch", socketMessage)} className="button endgame-message__button">Ещё одну!</button>
+        </div>
+    );
+};
+
+
+type RematchDialogProps = {
+    roomId: string,
+    gameId: string,
+    changeVisibility: React.Dispatch<React.SetStateAction<boolean>>
+}
+
+const RematchDialog: React.FC<RematchDialogProps> = ({ gameId, changeVisibility, roomId }) => {
+    const useChessStore = subscribeToGameStore(gameId);
+    const [whiteUsername, blackUsername] = useChessStore(playersSelector);
+    const initialGameData = useRef({ blackUsername: whiteUsername, whiteUsername: blackUsername, timeRule: "", title: "", gameId: "", maxTime: 0, roomId, secretName: "" });
+    api.games.getSecretName.useQuery(undefined, {
+        onSuccess(secretName) {
+            initialGameData.current.secretName = secretName;
+        }
+    });
+
+    api.games.get.useQuery({ gameId }, {
+        onSuccess: (gameData) => {
+            if (gameData) {
+                initialGameData.current.timeRule = gameData.timeRule;
+                initialGameData.current.title = gameData.title;
+            }
+        }
+    });
+
+    const { mutate: createGame } = api.games.create.useMutation({
+        onSuccess: ({ id }) => {
+            socket.emit("game ready", { roomId });
+            initialGameData.current.gameId = id;
+            socket.emit("start game", initialGameData.current);
+        }
+    });
+
+    function onClickYes() {
+        initialGameData.current.maxTime = Number(initialGameData.current.timeRule.split("/")[0]) * 60 * 1000;
+        if (initialGameData.current.maxTime) {
+            createGame(initialGameData.current);
+        }
+    }
+
+    return (
+        <>
+            <h3>Ещё одну?</h3>
+            <button onClick={onClickYes} type="button" className="link"><Check size="1.5rem" /></button>
+            <button onClick={() => changeVisibility(false)} type="button" className="link"><Cross size="1.5rem" /></button>
+        </>
     );
 };
 

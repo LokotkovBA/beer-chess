@@ -23,10 +23,8 @@ export const gamesRouter = createTRPCRouter({
             });
         }),
     create: protectedProcedure
-        .input(z.object({ roomId: z.string(), title: z.string(), maxTime: z.number(), timeRule: z.string(), isWhite: z.boolean(), inviteeUsername: z.string().nonempty() }))
-        .mutation(async ({ ctx, input: { title, roomId, timeRule, isWhite, inviteeUsername, maxTime } }) => {
-            const whiteUsername = isWhite ? ctx.session.user.uniqueName : inviteeUsername.toLowerCase();
-            const blackUsername = isWhite ? inviteeUsername.toLowerCase() : ctx.session.user.uniqueName;
+        .input(z.object({ roomId: z.string(), title: z.string(), maxTime: z.number(), timeRule: z.string(), whiteUsername: z.string().nonempty(), blackUsername: z.string().nonempty() }))
+        .mutation(async ({ ctx, input: { title, roomId, timeRule, maxTime, blackUsername, whiteUsername } }) => {
             const game = await ctx.prisma.game.create({
                 data: {
                     whiteUsername,

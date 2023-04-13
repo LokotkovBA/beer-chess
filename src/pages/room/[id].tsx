@@ -72,7 +72,7 @@ const RoomPage: NextPage<{ roomId: string, session: Session | null }> = ({ roomI
                     <ReadyForm roomId={roomId} creatorName={roomData.creatorUsername} name={sessionData?.user.name} />)
                 }
                 {gameData && <ChessBoard size={"5rem"} gameId={gameData.id} />}
-                {gameData && <GameInfoPanel gameId={gameData.id} boardAlignment={boardAlignment} />}
+                {gameData && <GameInfoPanel roomId={roomId} gameId={gameData.id} boardAlignment={boardAlignment} />}
             </div>
         </>
     );
