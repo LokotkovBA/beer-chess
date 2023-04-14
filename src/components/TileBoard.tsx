@@ -24,7 +24,7 @@ const TileBoard: React.FC<TileBoardProps> = ({ ranks = [8, 7, 6, 5, 4, 3, 2, 1],
                 {ranks.map((rank) => {
                     curColor.current = reverseTileColor(curColor.current);
                     return <div key={rank} className="chess-tile ranks__chess-tile">
-                        <p className={`chess-tile__rank chess-tile__rank--${reverseTileColor(curColor.current)}`}>{rank}</p>
+                        <p className={`chess-tile__coord chess-tile__coord--${reverseTileColor(curColor.current)}`}>{rank}</p>
                     </div>;
                 })}
             </div>
@@ -32,7 +32,7 @@ const TileBoard: React.FC<TileBoardProps> = ({ ranks = [8, 7, 6, 5, 4, 3, 2, 1],
                 {files.map((file) => {
                     curColor.current = reverseTileColor(curColor.current);
                     return <div key={file} className="chess-tile files__chess-tile">
-                        <p className={`chess-tile__file chess-tile__file--${curColor.current}`}>{file}</p>
+                        <p className={`chess-tile__coord chess-tile__coord--${curColor.current}`}>{file}</p>
                     </div>;
                 })}
             </div>

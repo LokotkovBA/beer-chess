@@ -30,11 +30,6 @@
     padding: $padding;
 }
 
-@mixin tileText {
-    font-size: .3em;
-    line-height: 1.1em;
-}
-
 .chess-tile {
     @include checkeredColors(background-color);
     @include tileSize(1em, .1em);
@@ -47,15 +42,10 @@
         background-color: var(--piece-color-black);
     }
 
-    &__rank {
+    &__coord {
         @include checkeredColors(color);
-        @include tileText();
-
-    }
-
-    &__file {
-        @include checkeredColors(color);
-        @include tileText();
+        font-size: .3em;
+        line-height: 1.1em;
     }
 }
 
