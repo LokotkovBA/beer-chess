@@ -19,6 +19,7 @@ type GameInfoPanelProps = {
 }
 
 const GameInfoPanel: React.FC<GameInfoPanelProps> = ({ boardAlignment, gameId, roomId }) => {
+    const { data: gameData } = api.games.getByRoomId.useQuery({ roomId });
     const useChessStore = subscribeToGameStore(gameId);
     const [playerWhite, playerBlack] = useChessStore(playersSelector);
     const [gameStatus, positionStatus] = useChessStore(gameStatusSelector);
@@ -28,6 +29,7 @@ const GameInfoPanel: React.FC<GameInfoPanelProps> = ({ boardAlignment, gameId, r
         <div className="panel-wrapper">
             <CapturedPieces size="3rem" gameId={gameId} boardAlignment={boardAlignment}>
                 <GameTimer gameId={gameId} boardAlignment={boardAlignment}>
+                    <span className="profile-name">{boardAlignment ? gameData?.blackUser.name : gameData?.whiteUser.name}</span>
                     {
                         (sessionData?.user.uniqueName === playerWhite || sessionData?.user.uniqueName === playerBlack)
                             ?
@@ -39,6 +41,7 @@ const GameInfoPanel: React.FC<GameInfoPanelProps> = ({ boardAlignment, gameId, r
                                 {getEndgameMessage(gameStatus, positionStatus)}
                             </h3>
                     }
+                    <span className="profile-name">{boardAlignment ? gameData?.whiteUser.name : gameData?.blackUser.name}</span>
                 </GameTimer>
             </CapturedPieces>
         </div>

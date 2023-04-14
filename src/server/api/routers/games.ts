@@ -2,7 +2,7 @@ import { z } from "zod";
 import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
 import { encrypt } from "~/server/helpers/encryption";
 import { GameStatus } from "@prisma/client";
-
+const displayNameSelector = { select: { name: true } };
 export const gamesRouter = createTRPCRouter({
     getSecretName: publicProcedure.query(({ ctx }) => {
         return ctx.session ? encrypt(ctx.session.user.uniqueName) : "unauthorized";
@@ -19,6 +19,19 @@ export const gamesRouter = createTRPCRouter({
         .query(({ ctx, input: { roomId } }) => {
             return ctx.prisma.game.findFirst({
                 where: { roomId },
+                select: {
+                    id: true,
+                    blackUser: displayNameSelector,
+                    whiteUser: displayNameSelector,
+                    timeRule: true,
+                    title: true,
+                    blackUsername: true,
+                    whiteUsername: true,
+                    status: true,
+                    timeLeftBlack: true,
+                    timeLeftWhite: true,
+                    history: true,
+                },
                 orderBy: { createdAt: "desc" }
             });
         }),
