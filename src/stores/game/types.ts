@@ -3,6 +3,7 @@ import { type UseMutateFunction } from "@tanstack/react-query";
 import { type TRPCClientErrorLike } from "@trpc/react-query";
 import { type inferProcedureOutput, type inferProcedureInput } from "@trpc/server";
 import { type Socket } from "socket.io-client";
+import { type PlayFunction } from "use-sound/dist/types";
 import { type PromoteData } from "~/components/ChessBoard";
 import { type AppRouter } from "~/server/api/root";
 import { type PieceCoordinates } from "~/utils/PieceNotation";
@@ -27,6 +28,7 @@ export type ChessState = {
     positionStatus: PositionStatus,
     lastMoveFrom: string,
     lastMoveTo: string,
+    position: string,
     capturedPieces: [string, number][]
     decrementTimer: () => void,
     canMove: () => boolean,
@@ -35,7 +37,7 @@ export type ChessState = {
     setPieceLegalMoves: (legalMoves: string[][]) => void,
     movePiece: (oldCoords: string, newCoords: string) => void,
     makeMove: (moveIndex: number, oldCoords: string, newCoords: string, socket: Socket, secretName: string, gameId: string, updateDB: PositionUseMutationFunction) => void,
-    subscribeToMoves: (socket: Socket, gameId: string) => void,
+    subscribeToMoves: (socket: Socket, gameId: string, playSound: PlayFunction) => void,
     unsubscribeFromMoves: (socket: Socket, gameId: string) => void,
 }
 

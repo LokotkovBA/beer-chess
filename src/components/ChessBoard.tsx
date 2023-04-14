@@ -11,6 +11,7 @@ import { api } from "~/utils/api";
 import { useSession } from "next-auth/react";
 import { shallow } from "zustand/shallow";
 import TileBoard from "./TileBoard";
+import useSound from "use-sound";
 
 type ChessBoardProps = {
     size: string;
@@ -47,6 +48,7 @@ export const ChessBoard: React.FC<ChessBoardProps> = memo(function ChessBoard({ 
 });
 
 const InteractiveBoard: React.FC<ChessBoardProps & { playerBoardRanks: number[], playerBoardFiles: string[] } & PropsWithChildren> = ({ children, gameId, size, playerBoardFiles, playerBoardRanks }) => {
+    const [play] = useSound("/move.placeholder.ogg", { volume: 0.5 });
     const { data: sessionData } = useSession();
     const { data: secretName } = api.games.getSecretName.useQuery();
     const useChessStore = subscribeToGameStore(gameId);
@@ -59,11 +61,11 @@ const InteractiveBoard: React.FC<ChessBoardProps & { playerBoardRanks: number[],
         };
     }, [gameId]);
     useEffect(() => {
-        subscribeToMoves(socket, gameId);
+        subscribeToMoves(socket, gameId, play);
         return () => {
             unsubscribeFromMoves(socket, gameId);
         };
-    }, [gameId, subscribeToMoves, unsubscribeFromMoves]);
+    }, [gameId, subscribeToMoves, unsubscribeFromMoves, play]);
     const { mutate: updateGame } = api.games.update.useMutation();
 
     function onDragEnd(event: DragEndEvent) {

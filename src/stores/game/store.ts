@@ -34,6 +34,7 @@ const stateCreator: StateCreator<ChessState, [["zustand/immer", never]], []> = (
         gameStatus: "INITIALIZING",
         positionStatus: "PLAYABLE",
         capturedPieces: [],
+        position: "",
         decrementTimer: () => {
             const { whiteTurn } = get();
             set(state => {
@@ -69,7 +70,6 @@ const stateCreator: StateCreator<ChessState, [["zustand/immer", never]], []> = (
                 const moveData = currentMove[currentMove.length - 1];
                 if (!currentMove.includes("Promotion")) {
                     socket.emit("move", { gameId, move: moveData, secretName }, (success: boolean, response: { timeLeftWhite: number, timeLeftBlack: number, history: string, status: string, position: string, gameId: string }) => {
-                        console.log(success, response);
                         if (success) {
                             updateDB(response);
                         }
@@ -94,7 +94,7 @@ const stateCreator: StateCreator<ChessState, [["zustand/immer", never]], []> = (
             }
             setPieceLegalMoves([]);
         },
-        subscribeToMoves: (socket, gameId) => {
+        subscribeToMoves: (socket, gameId, playSound) => {
             socket.on(`${gameId} success`, (message) => {
                 console.log(message);
                 const {
@@ -113,7 +113,12 @@ const stateCreator: StateCreator<ChessState, [["zustand/immer", never]], []> = (
                 } = successSocketMessageSchema.parse(message);
                 if (!isPositionStatus(positionStatus)) return socket.emit("error", ({ message: "Incorrect position status" }));
                 if (!isGameStatus(gameStatus)) return socket.emit("error", ({ message: "Incorrect game status" }));
+                const oldPosition = get().position;
+                if (!!oldPosition && oldPosition !== newPosition) {
+                    playSound();
+                }
                 set(state => {
+                    state.position = newPosition;
                     state.capturedPieces = capturedPieces;
                     state.playerWhite = playerWhite;
                     state.playerBlack = playerBlack;
