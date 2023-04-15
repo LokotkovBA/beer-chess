@@ -2,9 +2,9 @@ import { type FormEvent, useEffect, useRef, useState } from "react";
 import { z } from "zod";
 import { sendStartGame, socket } from "~/server/gameServer";
 import { api } from "~/utils/api";
-import { GenericPiece } from "./ChessPiece";
 import { toast } from "react-hot-toast";
 import { useSession } from "next-auth/react";
+import GenericPiece from "~/assets/GenericPiece";
 
 
 

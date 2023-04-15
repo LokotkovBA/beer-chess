@@ -2,7 +2,6 @@ import React, { type PropsWithChildren, useEffect, useRef, useState, memo, useMe
 import { shallow } from "zustand/shallow";
 import { capturedPiecesSelector, gameStatusSelector, playersSelector, timerSelector } from "~/stores/game/selectors";
 import { subscribeToGameStore } from "~/stores/game/store";
-import { GenericPiece } from "./ChessPiece";
 import { useSession } from "next-auth/react";
 import Flag from "~/assets/Flag";
 import { api } from "~/utils/api";
@@ -11,6 +10,7 @@ import { toast } from "react-hot-toast";
 import { type GameStatus } from "@prisma/client";
 import { type PositionStatus } from "~/stores/game/types";
 import { Check, CircledCross, Cross } from "~/assets/ChoiceIcons";
+import GenericPiece from "~/assets/GenericPiece";
 
 type GameInfoPanelProps = {
     gameId: string,
