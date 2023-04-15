@@ -3,7 +3,7 @@ import { type DragStartEvent, type DragEndEvent } from "@dnd-kit/core/dist/types
 import React, { memo, type PropsWithChildren, useMemo, useEffect } from "react";
 import { z } from "zod";
 import { socket } from "~/server/gameServer";
-import ChessPiece, { GenericPiece } from "./ChessPiece";
+import ChessPiece from "./ChessPiece";
 import { Dot } from "~/assets/Dot";
 import { subscribeToGameStore } from "~/stores/game/store";
 import { boardSelector, moveSubSelector } from "~/stores/game/selectors";
@@ -12,6 +12,7 @@ import { useSession } from "next-auth/react";
 import { shallow } from "zustand/shallow";
 import TileBoard from "./TileBoard";
 import useSound from "use-sound";
+import GenericPiece from "~/assets/GenericPiece";
 
 type ChessBoardProps = {
     size: string;
