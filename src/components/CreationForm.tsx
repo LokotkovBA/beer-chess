@@ -65,7 +65,7 @@ export const CreationForm: React.FC<{ roomId: string }> = ({ roomId }) => {
             <input className="input" ref={inviteeUsername} placeholder="Имя оппонента" type="text" />
             <button className="button" type="button" onClick={() => socket.emit("send invite", { roomId, uniqueName: inviteeUsername.current?.value, name: sessionData?.user.name })}>Отправить приглашение</button>
             <fieldset className="fieldset creation-form__fieldset--sidePicker">
-                <legend>Выберите сторону</legend>
+                <legend className="fieldset__legend">Выберите сторону</legend>
                 <input className="radio" name="color" value="isWhite" id="white" type="radio" defaultChecked={true} ref={isWhite} />
                 <label className="radio--styled" htmlFor="white"><GenericPiece size="5rem" piece="K" /></label>
                 <input className="radio" name="color" value="isBlack" id="black" type="radio" />

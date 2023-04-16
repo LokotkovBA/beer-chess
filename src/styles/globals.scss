@@ -110,6 +110,9 @@ body {
     padding: 1em;
     display: flex;
     gap: 1em;
+    &__legend{
+        margin: auto;
+    }
 }
 
 .radio{
@@ -123,7 +126,8 @@ body {
         }
     }
     &:checked + &--styled{
-       background-color: var(--green-bg-color);
+       background-color: var(--button-color);
+       cursor: default;
     }
 }
 
