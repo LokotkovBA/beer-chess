@@ -23,6 +23,7 @@ body {
     --red-hover-color: #991b1b;
     --red-text-color: #dc2626;
     --green-text-color: #16a34a;
+    --green-bg-color: #166534;
     --sure-color: #7c2d12;
     --sure-hover-color: #9a3412;
     --tile-black: #4f46e5;
@@ -101,6 +102,28 @@ body {
         &:hover {
             background-color: var(--sure-hover-color);
         }
+    }
+}
+
+.fieldset{
+    border: none;
+    padding: 1em;
+    display: flex;
+    gap: 1em;
+}
+
+.radio{
+    display: none;
+    &--styled{
+        cursor: pointer;
+        border-radius: 5em;
+        padding: .5em;
+        &:hover{
+            background-color: var(--link-hover-color);
+        }
+    }
+    &:checked + &--styled{
+       background-color: var(--green-bg-color);
     }
 }
 

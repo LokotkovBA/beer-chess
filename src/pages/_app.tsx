@@ -11,6 +11,7 @@ import { socket } from "~/server/gameServer";
 import "~/styles/globals.scss";
 import "~/styles/home-page.scss";
 import "~/styles/chess.scss";
+import "~/styles/creation-form.scss";
 
 const MyApp: AppType<{ session: Session | null }> = ({
     Component,
