@@ -5,8 +5,8 @@ import { api } from "~/utils/api";
 import { toast } from "react-hot-toast";
 import { useSession } from "next-auth/react";
 import GenericPiece from "~/assets/GenericPiece";
-
-
+import { useTimeModeStore } from "~/stores/timeMode/store";
+import { timeModeChangeSelector, timeModeValueSelector } from "~/stores/timeMode/selectors";
 
 export const CreationForm: React.FC<{ roomId: string }> = ({ roomId }) => {
     const { data: secretName } = api.games.getSecretName.useQuery();
@@ -28,13 +28,13 @@ export const CreationForm: React.FC<{ roomId: string }> = ({ roomId }) => {
             socket.off("room ready status");
         };
     }, [roomId]);
-
     const titleRef = useRef<HTMLInputElement>(null);
     const isWhite = useRef<HTMLInputElement>(null);
     const inviteeUsername = useRef<HTMLInputElement>(null);
     const [isReady, setIsReady] = useState(false);
     const [timeControl, setTimeControl] = useState(true);
     const { data: sessionData } = useSession();
+    const [sideTimeValue, incrementTimeValue] = useTimeModeStore(timeModeValueSelector);
 
     const { mutate: createGame } = api.games.create.useMutation({
         onSuccess: ({ id, timeRule, blackUsername, whiteUsername, title }) => {
@@ -55,7 +55,11 @@ export const CreationForm: React.FC<{ roomId: string }> = ({ roomId }) => {
                 whiteUsername = inviteeUsername.current.value;
                 blackUsername = sessionData.user.uniqueName;
             }
-            createGame({ title: titleRef.current.value, maxTime: 10 * 60 * 1000, roomId, timeRule: "10/3", whiteUsername, blackUsername });
+            let timeRule = "-1/-1";
+            if (timeControl) {
+                timeRule = `${sideTimeValue}/${incrementTimeValue}`;
+            }
+            createGame({ title: titleRef.current.value, maxTime: sideTimeValue * 60 * 1000, roomId, timeRule, whiteUsername, blackUsername });
         }
     }
 
@@ -78,13 +82,23 @@ export const CreationForm: React.FC<{ roomId: string }> = ({ roomId }) => {
                 <input className="radio" onClick={() => setTimeControl(false)} name="timeControl" value="timeOff" id="timeOff" type="radio" />
                 <label className="radio--styled" htmlFor="timeOff">Без времени</label>
             </fieldset>
-            {timeControl &&
-                <>
-                    <label htmlFor="sideTime">Минут на сторону</label>
-                    <input id="sideTime" type="range" min="1" max="20" />
-                    <label htmlFor="sideTime">Добавление секунд на ход</label>
-                    <input id="incrementTime" type="range" min="0" max="20" />
-                </>}
+            {timeControl && <TimeSelector />}
         </form>
+    );
+};
+
+
+const TimeSelector: React.FC = () => {
+    const [sideTimeValue, incrementTimeValue] = useTimeModeStore(timeModeValueSelector);
+    const [changeSideTime, changeIncrementTime] = useTimeModeStore(timeModeChangeSelector);
+    return (
+        <>
+            <label htmlFor="sideTime">Минут на сторону</label>
+            <input defaultValue={sideTimeValue} onChange={(event) => changeSideTime(event.target.value)} id="sideTime" type="range" min="1" max="36" />
+            {sideTimeValue}
+            <label htmlFor="incrementTime">Добавление секунд на ход</label>
+            <input defaultValue={incrementTimeValue} onChange={(event) => changeIncrementTime(event.target.value)} id="incrementTime" type="range" min="0" max="30" />
+            {incrementTimeValue}
+        </>
     );
 };
