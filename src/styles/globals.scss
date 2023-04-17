@@ -14,6 +14,7 @@ body {
 :root {
     --bg-color: #1e1b4b;
     --bg2-color: #312e81;
+    --link-color: inherit;
     --link-hover-color: #3730a3;
     --alert-color: #4338ca;
     --text-color: #eef2ff;
@@ -57,7 +58,7 @@ body {
     justify-items: center;
 }
 
-@mixin button-style($font-size, $pad-topbottom, $pad-leftright, $border-radius, $gap) {
+@mixin button-style-sizes($font-size, $pad-topbottom, $pad-leftright, $border-radius, $gap) {
     border: none;
     border-radius: $border-radius;
     padding: $pad-topbottom $pad-leftright;
@@ -68,15 +69,19 @@ body {
     gap: $gap;
     color: var(--text-color);
     font-weight: 700;
+    text-decoration: none;
 }
-
-.button {
-    @include button-style(1.5rem, .5em, .9em, .5em, .2em);
-    background-color: var(--button-color);
+@mixin button-style-colors($background-color, $hover-color){
+    background-color: var($background-color);
 
     &:hover {
-        background-color: var(--button-hover-color);
+        background-color: var($hover-color);
     }
+} 
+
+.button {
+    @include button-style-sizes(1.5rem, .5em, .9em, .5em, .2em);
+    @include button-style-colors(--button-color, --button-hover-color);
 
     &--brb {
         background-color: var(--red-color);
@@ -88,13 +93,8 @@ body {
 }
 
 .link {
-    @include button-style(1.5rem, .2em, .5em, .5em, .2em);
-    background-color: inherit;
-    text-decoration: none;
-
-    &:hover {
-        background-color: var(--link-hover-color);
-    }
+    @include button-style-sizes(1.5rem, .2em, .5em, .5em, .2em);
+    @include button-style-colors(--link-color, --link-hover-color);
 
     &--sure {
         background-color: var(--sure-color);

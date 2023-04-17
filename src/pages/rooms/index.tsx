@@ -69,7 +69,7 @@ const CreateRoomSection: React.FC = () => {
                     modalRef.current?.close();
                 }}>Закрыть</button>
                 <CreationForm roomId={roomId} />
-                <Link className="link" href={`room/${roomId}`}>Перейти в комнату</Link>
+                <Link className="button" href={`room/${roomId}`}>Перейти в комнату</Link>
             </dialog>
             <button disabled={isCreating} type="button" onClick={() => createRoom()}>
                 Создать комнату
