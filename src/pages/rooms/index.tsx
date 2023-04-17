@@ -37,13 +37,14 @@ const RoomsPage: NextPage = () => {
 
 const CreateRoomSection: React.FC = () => {
     const ctx = api.useContext();
+    const [showDialog, setShowDialog] = useState(false);
     const { mutate: createRoom, isLoading: isCreating } = api.rooms.create.useMutation({
         onSuccess: (data) => {
             toast.success("Success");
             void ctx.rooms.invalidate();
             if (data) {
-                setRoomId(data.id);
-                modalRef.current?.showModal();
+                roomId.current = data.id;
+                setShowDialog(true);
             }
         },
         onError: (error) => {
@@ -55,22 +56,20 @@ const CreateRoomSection: React.FC = () => {
         }
     });
 
-    const [roomId, setRoomId] = useState("");
-    const modalRef = useRef<HTMLDialogElement>(null);
+    const roomId = useRef("");
 
     return (
         <>
             {isCreating && <div>Creating...</div>}
-            <dialog className="pop-up" ref={modalRef}>
+            {showDialog && <dialog className="pop-up">
                 <button className="button" type="button" onClick={() => {
                     if (roomId) {
                         socket.emit("leave room", { roomId });
                     }
-                    modalRef.current?.close();
+                    setShowDialog(false);
                 }}>Закрыть</button>
-                <CreationForm roomId={roomId} />
-                <Link className="button" href={`room/${roomId}`}>Перейти в комнату</Link>
-            </dialog>
+                <CreationForm roomId={roomId.current} />
+            </dialog>}
             <button disabled={isCreating} type="button" onClick={() => createRoom()}>
                 Создать комнату
             </button>
