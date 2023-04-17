@@ -1,5 +1,9 @@
 .creation-form{
+    background-color: var(--bg2-color);
+    padding: 2em;
+    border-radius: 1em;
     grid-column: 2;
     display: grid;
     justify-items: center;
+    gap: .5em;
 }

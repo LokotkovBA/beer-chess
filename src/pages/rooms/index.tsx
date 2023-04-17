@@ -61,18 +61,18 @@ const CreateRoomSection: React.FC = () => {
     return (
         <>
             {isCreating && <div>Creating...</div>}
-            <dialog className="modal" ref={modalRef}>
-                <button type="button" onClick={() => {
+            <dialog className="pop-up" ref={modalRef}>
+                <button className="button" type="button" onClick={() => {
                     if (roomId) {
                         socket.emit("leave room", { roomId });
                     }
                     modalRef.current?.close();
                 }}>Закрыть</button>
                 <CreationForm roomId={roomId} />
-                <Link href={`room/${roomId}`}>Перейти в комнату</Link>
+                <Link className="link" href={`room/${roomId}`}>Перейти в комнату</Link>
             </dialog>
             <button disabled={isCreating} type="button" onClick={() => createRoom()}>
-                Create Room
+                Создать комнату
             </button>
         </>
     );
