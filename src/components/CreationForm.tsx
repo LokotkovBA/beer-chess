@@ -7,6 +7,8 @@ import { useSession } from "next-auth/react";
 import GenericPiece from "~/assets/GenericPiece";
 import { useTimeModeStore } from "~/stores/timeMode/store";
 import { timeModeChangeSelector, timeModeValueSelector } from "~/stores/timeMode/selectors";
+import { useRouter } from "next/router";
+import Link from "next/link";
 
 export const CreationForm: React.FC<{ roomId: string }> = ({ roomId }) => {
     const { data: secretName } = api.games.getSecretName.useQuery();
@@ -40,9 +42,11 @@ export const CreationForm: React.FC<{ roomId: string }> = ({ roomId }) => {
         onSuccess: ({ id, timeRule, blackUsername, whiteUsername, title }) => {
             socket.emit("game ready", { roomId });
             secretName && sendStartGame(id, title, whiteUsername, blackUsername, timeRule, secretName);
+            if (pathname === "/rooms") {
+                void redirectTo(`/room/${roomId}`);
+            }
         }
     });
-
     function onSubmit(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
         if (isReady && titleRef.current && sessionData && isWhite.current && inviteeUsername.current?.value) {
@@ -62,28 +66,31 @@ export const CreationForm: React.FC<{ roomId: string }> = ({ roomId }) => {
             createGame({ title: titleRef.current.value, maxTime: sideTimeValue * 60 * 1000, roomId, timeRule, whiteUsername, blackUsername });
         }
     }
-
+    const { pathname, push: redirectTo } = useRouter();
     return (
-        <form className="creation-form" method="submit" onSubmit={onSubmit}>
-            <input className="input" ref={titleRef} placeholder="Название игры" type="text" />
-            <input className="input" ref={inviteeUsername} placeholder="Имя оппонента" type="text" />
-            <button className="button" type="button" onClick={() => socket.emit("send invite", { roomId, uniqueName: inviteeUsername.current?.value, name: sessionData?.user.name })}>Отправить приглашение</button>
-            <fieldset className="fieldset creation-form__fieldset--sidePicker">
-                <legend className="fieldset__legend">Выберите сторону</legend>
-                <input className="radio" name="color" value="isWhite" id="white" type="radio" defaultChecked={true} ref={isWhite} />
-                <label className="radio--styled" htmlFor="white"><GenericPiece size="5rem" piece="K" /></label>
-                <input className="radio" name="color" value="isBlack" id="black" type="radio" />
-                <label className="radio--styled" htmlFor="black"><GenericPiece size="5rem" piece="k" /></label>
-            </fieldset>
-            <button className="button" disabled={!isReady} type="submit">Запуск</button>
-            <fieldset className="fieldset creation-form__fieldset--time-control">
-                <input className="radio" onClick={() => setTimeControl(true)} name="timeControl" value="timeOn" id="timeOn" type="radio" defaultChecked={true} />
-                <label className="radio--styled" htmlFor="timeOn">На время</label>
-                <input className="radio" onClick={() => setTimeControl(false)} name="timeControl" value="timeOff" id="timeOff" type="radio" />
-                <label className="radio--styled" htmlFor="timeOff">Без времени</label>
-            </fieldset>
-            {timeControl && <TimeSelector />}
-        </form>
+        <>
+            <form className="creation-form" method="submit" onSubmit={onSubmit}>
+                <input className="input" ref={titleRef} placeholder="Название игры" type="text" />
+                <input className="input" ref={inviteeUsername} placeholder="Имя оппонента" type="text" />
+                <button className="button" type="button" onClick={() => socket.emit("send invite", { roomId, uniqueName: inviteeUsername.current?.value, name: sessionData?.user.name })}>Отправить приглашение</button>
+                <fieldset className="fieldset creation-form__fieldset--sidePicker">
+                    <legend className="fieldset__legend">Выберите сторону</legend>
+                    <input className="radio" name="color" value="isWhite" id="white" type="radio" defaultChecked={true} ref={isWhite} />
+                    <label className="radio--styled" htmlFor="white"><GenericPiece size="5rem" piece="K" /></label>
+                    <input className="radio" name="color" value="isBlack" id="black" type="radio" />
+                    <label className="radio--styled" htmlFor="black"><GenericPiece size="5rem" piece="k" /></label>
+                </fieldset>
+                <button className="button" disabled={!isReady} type="submit">Запуск</button>
+                <fieldset className="fieldset creation-form__fieldset--time-control">
+                    <input className="radio" onClick={() => setTimeControl(true)} name="timeControl" value="timeOn" id="timeOn" type="radio" defaultChecked={true} />
+                    <label className="radio--styled" htmlFor="timeOn">На время</label>
+                    <input className="radio" onClick={() => setTimeControl(false)} name="timeControl" value="timeOff" id="timeOff" type="radio" />
+                    <label className="radio--styled" htmlFor="timeOff">Без времени</label>
+                </fieldset>
+                {timeControl && <TimeSelector />}
+            </form>
+            {pathname === "/rooms" && <Link className="button" href={`room/${roomId}`}>Перейти в комнату</Link>}
+        </>
     );
 };
 

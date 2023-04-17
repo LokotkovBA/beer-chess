@@ -64,7 +64,7 @@ const CreateRoomSection: React.FC = () => {
             {showDialog && <dialog className="pop-up">
                 <button className="button" type="button" onClick={() => {
                     if (roomId) {
-                        socket.emit("leave room", { roomId });
+                        socket.emit("leave room", { roomId: roomId.current });
                     }
                     setShowDialog(false);
                 }}>Закрыть</button>
