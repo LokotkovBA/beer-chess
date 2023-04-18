@@ -1,23 +1,14 @@
 import { z } from "zod";
-import { create, type UseBoundStore, type StoreApi, type StateCreator } from "zustand";
+import { create } from "zustand";
 import { immer } from "zustand/middleware/immer";
 import { type PromoteData } from "~/components/ChessBoard";
 import { isPieceNotation, PieceCoordinates } from "~/utils/PieceNotation";
-import { isPositionStatus, type ChessState, isGameStatus } from "./types";
+import { isPositionStatus, type GameState, isGameStatus } from "./types";
 import { enableMapSet } from "immer";
 
 enableMapSet();
-const gamesStoreMap = new Map<string, UseBoundStore<StoreApi<ChessState>>>();
 
-export function subscribeToGameStore(gameId: string) {
-    const gameStore = gamesStoreMap.get(gameId);
-    if (gameStore) return gameStore;
-    const newGameStore = create(immer<ChessState>(stateCreator));
-    gamesStoreMap.set(gameId, newGameStore);
-    return newGameStore;
-}
-
-const stateCreator: StateCreator<ChessState, [["zustand/immer", never]], []> = (set: ((setState: ((state: ChessState) => void)) => void), get) => {
+const useGameStore = create(immer<GameState>((set, get) => {
     return {
         playerBlack: "",
         playerWhite: "",
@@ -139,8 +130,8 @@ const stateCreator: StateCreator<ChessState, [["zustand/immer", never]], []> = (
             socket.off(`${gameId} success`);
         },
     };
-};
-
+}));
+export default useGameStore;
 
 const successSocketMessageSchema = z.object({
     capturedPieces: z.array(z.tuple([z.string(), z.number()])),

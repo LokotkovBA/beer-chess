@@ -24,7 +24,7 @@ function parseIncrementTime(sliderValue: string): number {
     }
 }
 
-export const useTimeModeStore = create<TimeModeState>((set) => ({
+const useTimeModeStore = create<TimeModeState>((set) => ({
     side: 10,
     increment: 3,
     setSide(sliderValue) {
@@ -34,6 +34,7 @@ export const useTimeModeStore = create<TimeModeState>((set) => ({
         set(state => ({ ...state, increment: parseIncrementTime(sliderValue) }));
     },
 }));
+export default useTimeModeStore;
 
 export type TimeModeState = {
     side: number,

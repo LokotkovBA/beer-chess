@@ -5,7 +5,6 @@ import { z } from "zod";
 import { socket } from "~/server/gameServer";
 import ChessPiece from "./ChessPiece";
 import { Dot } from "~/assets/Dot";
-import { subscribeToGameStore } from "~/stores/game/store";
 import { boardSelector, moveSubSelector } from "~/stores/game/selectors";
 import { api } from "~/utils/api";
 import { useSession } from "next-auth/react";
@@ -13,6 +12,7 @@ import { shallow } from "zustand/shallow";
 import TileBoard from "./TileBoard";
 import useSound from "use-sound";
 import GenericPiece from "~/assets/GenericPiece";
+import useGameStore from "~/stores/game/store";
 
 type ChessBoardProps = {
     size: string;
@@ -52,9 +52,8 @@ const InteractiveBoard: React.FC<ChessBoardProps & { playerBoardRanks: number[],
     const [play] = useSound("/move.placeholder.ogg", { volume: 0.5 });
     const { data: sessionData } = useSession();
     const { data: secretName } = api.games.getSecretName.useQuery();
-    const useChessStore = subscribeToGameStore(gameId);
-    const gameState = useChessStore(boardSelector, shallow);
-    const [subscribeToMoves, unsubscribeFromMoves] = useChessStore(moveSubSelector, shallow);
+    const gameState = useGameStore(boardSelector, shallow);
+    const [subscribeToMoves, unsubscribeFromMoves] = useGameStore(moveSubSelector, shallow);
     useEffect(() => {
         socket.emit("join game", ({ gameId }));
         return () => {

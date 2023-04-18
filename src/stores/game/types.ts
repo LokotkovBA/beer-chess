@@ -13,7 +13,7 @@ type GameUpdateType = AppRouter["games"]["update"];
 type PositionUseMutationFunction = UseMutateFunction<inferProcedureOutput<GameUpdateType>, TRPCClientErrorLike<GameUpdateType>, inferProcedureInput<GameUpdateType>, unknown>;
 
 export type PositionStatus = "PLAYABLE" | "STALEMATE" | "CHECK" | "CHECKMATE" | "DEAD" | "ERROR" | "FORFEIT";
-export type ChessState = {
+export type GameState = {
     playerWhite: string,
     playerBlack: string,
     pieceMap: PieceCoordinates | null,

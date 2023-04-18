@@ -5,7 +5,7 @@ import { api } from "~/utils/api";
 import { toast } from "react-hot-toast";
 import { useSession } from "next-auth/react";
 import GenericPiece from "~/assets/GenericPiece";
-import { useTimeModeStore } from "~/stores/timeMode/store";
+import useTimeModeStore from "~/stores/timeMode/store";
 import { timeModeChangeSelector, timeModeValueSelector } from "~/stores/timeMode/selectors";
 import { useRouter } from "next/router";
 import Link from "next/link";

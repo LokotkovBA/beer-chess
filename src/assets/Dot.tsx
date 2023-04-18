@@ -2,7 +2,7 @@ import { useDroppable } from "@dnd-kit/core";
 import React from "react";
 import { socket } from "~/server/gameServer";
 import { pieceSelector } from "~/stores/game/selectors";
-import { subscribeToGameStore } from "~/stores/game/store";
+import useGameStore from "~/stores/game/store";
 import { api } from "~/utils/api";
 
 
@@ -20,8 +20,7 @@ export const Dot: React.FC<DotProps> = ({ size, blackColor = "var(--piece-color-
     const { setNodeRef } = useDroppable({ id: id, data: { moveIndex, newCoords: coords } });
     const { data: secretName } = api.games.getSecretName.useQuery();
     const { mutate: updateGame } = api.games.update.useMutation();
-    const useChessStore = subscribeToGameStore(gameId);
-    const makeMove = useChessStore(pieceSelector);
+    const makeMove = useGameStore(pieceSelector);
     return (
         <div onClick={() => secretName && makeMove(moveIndex, capturingPieceCoords, coords, socket, secretName, gameId, updateGame)} className="chess-piece--capture" ref={setNodeRef}>
             <svg width={size} height={size} viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">

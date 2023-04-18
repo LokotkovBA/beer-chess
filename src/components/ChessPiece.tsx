@@ -4,9 +4,9 @@ import React from "react";
 import GenericPiece from "~/assets/GenericPiece";
 import { socket } from "~/server/gameServer";
 import { pieceSelector } from "~/stores/game/selectors";
-import { subscribeToGameStore } from "~/stores/game/store";
 import { type PieceNotation } from "~/utils/PieceNotation";
 import { api } from "~/utils/api";
+import useGameStore from "~/stores/game/store";
 
 type GenericChessPieceProps = {
     gameId: string,
@@ -22,8 +22,7 @@ type GenericChessPieceProps = {
 }
 
 const ChessPiece: React.FC<GenericChessPieceProps> = ({ gameId, piece, id, coords, moveIndex = -1, capturingPieceCoords, disabled = false, isLegal = false, whiteColor = "var(--piece-color-white)", blackColor = "var(--piece-color-black)" }) => {
-    const useChessStore = subscribeToGameStore(gameId);
-    const makeMove = useChessStore(pieceSelector);
+    const makeMove = useGameStore(pieceSelector);
     const { data: secretName } = api.games.getSecretName.useQuery();
     const { setNodeRef, attributes: { role, tabIndex }, listeners, transform, isDragging } = useDraggable({ id: id, disabled, data: { coords } });
     const { setNodeRef: setDroppable } = useDroppable({ id: id, disabled: !isLegal, data: { moveIndex, newCoords: coords } });

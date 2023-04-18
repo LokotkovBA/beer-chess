@@ -1,6 +1,6 @@
-import { type ChessState } from "./types";
+import { type GameState } from "./types";
 
-export function boardSelector(state: ChessState) { //selector for the entire board
+export function boardSelector(state: GameState) { //selector for the entire board
     return {
         playerWhite: state.playerWhite,
         playerBlack: state.playerBlack,
@@ -18,26 +18,26 @@ export function boardSelector(state: ChessState) { //selector for the entire boa
     } as const;
 }
 
-export function gameStatusSelector(state: ChessState) {
+export function gameStatusSelector(state: GameState) {
     return [state.gameStatus, state.positionStatus] as const;
 }
 
-export function moveSubSelector(state: ChessState) {
+export function moveSubSelector(state: GameState) {
     return [state.subscribeToMoves, state.unsubscribeFromMoves] as const;
 }
 
-export function playersSelector(state: ChessState) {
+export function playersSelector(state: GameState) {
     return [state.playerWhite, state.playerBlack] as const;
 }
 
-export function timerSelector(state: ChessState) {
+export function timerSelector(state: GameState) {
     return [state.timeLeftWhite, state.timeLeftBlack, state.gameStatus, state.decrementTimer] as const;
 }
 
-export function pieceSelector(state: ChessState) { //selector for a piece
+export function pieceSelector(state: GameState) { //selector for a piece
     return state.makeMove;
 }
 
-export function capturedPiecesSelector(state: ChessState) { //selector for a piece
+export function capturedPiecesSelector(state: GameState) { //selector for a piece
     return state.capturedPieces;
 }

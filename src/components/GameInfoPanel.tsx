@@ -1,7 +1,6 @@
 import React, { type PropsWithChildren, useEffect, useRef, useState, memo, useMemo } from "react";
 import { shallow } from "zustand/shallow";
 import { capturedPiecesSelector, gameStatusSelector, playersSelector, timerSelector } from "~/stores/game/selectors";
-import { subscribeToGameStore } from "~/stores/game/store";
 import { useSession } from "next-auth/react";
 import Flag from "~/assets/Flag";
 import { api } from "~/utils/api";
@@ -11,6 +10,7 @@ import { type GameStatus } from "@prisma/client";
 import { type PositionStatus } from "~/stores/game/types";
 import { Check, CircledCross, Cross } from "~/assets/ChoiceIcons";
 import GenericPiece from "~/assets/GenericPiece";
+import useGameStore from "~/stores/game/store";
 
 type GameInfoPanelProps = {
     gameId: string,
@@ -20,15 +20,14 @@ type GameInfoPanelProps = {
 
 const GameInfoPanel: React.FC<GameInfoPanelProps> = ({ boardAlignment, gameId, roomId }) => {
     const { data: gameData } = api.games.getByRoomId.useQuery({ roomId });
-    const useChessStore = subscribeToGameStore(gameId);
-    const [playerWhite, playerBlack] = useChessStore(playersSelector);
-    const [gameStatus, positionStatus] = useChessStore(gameStatusSelector);
+    const [playerWhite, playerBlack] = useGameStore(playersSelector);
+    const [gameStatus, positionStatus] = useGameStore(gameStatusSelector);
 
     const { data: sessionData } = useSession();
     return (
         <div className="panel-wrapper">
-            <CapturedPieces size="3rem" gameId={gameId} boardAlignment={boardAlignment}>
-                <GameTimer gameId={gameId} boardAlignment={boardAlignment}>
+            <CapturedPieces size="3rem" boardAlignment={boardAlignment}>
+                <GameTimer boardAlignment={boardAlignment}>
                     <span className="profile-name">{boardAlignment ? gameData?.blackUser.name : gameData?.whiteUser.name}</span>
                     {
                         (sessionData?.user.uniqueName === playerWhite || sessionData?.user.uniqueName === playerBlack)
@@ -104,8 +103,7 @@ type ActionsPanelProps = {
 }
 
 const ActionsPanel: React.FC<ActionsPanelProps> = ({ gameId, roomId }) => {
-    const useChessStore = subscribeToGameStore(gameId);
-    const [gameStatus, positionStatus] = useChessStore(gameStatusSelector);
+    const [gameStatus, positionStatus] = useGameStore(gameStatusSelector);
     const [commitForfeit, setCommitForfeit] = useState(false);
     const [suggestReceived, setSuggestReceived] = useState(false);
     const { data: secretName } = api.games.getSecretName.useQuery();
@@ -172,8 +170,7 @@ type RematchDialogProps = {
 }
 
 const RematchDialog: React.FC<RematchDialogProps> = ({ gameId, changeVisibility, roomId }) => {
-    const useChessStore = subscribeToGameStore(gameId);
-    const [whiteUsername, blackUsername] = useChessStore(playersSelector);
+    const [whiteUsername, blackUsername] = useGameStore(playersSelector);
     const initialGameData = useRef({ blackUsername: whiteUsername, whiteUsername: blackUsername, timeRule: "", title: "", gameId: "", maxTime: 0, roomId, secretName: "" });
     api.games.getSecretName.useQuery(undefined, {
         onSuccess(secretName) {
@@ -215,14 +212,12 @@ const RematchDialog: React.FC<RematchDialogProps> = ({ gameId, changeVisibility,
 };
 
 type CapturedPiecesProps = {
-    gameId: string
     boardAlignment: boolean
     size: string
 }
 
-const CapturedPieces: React.FC<CapturedPiecesProps & PropsWithChildren> = memo(function CapturedPieces({ gameId, children, boardAlignment, size }) {
-    const useChessStore = subscribeToGameStore(gameId);
-    const capturedPieces = useChessStore(capturedPiecesSelector, shallow);
+const CapturedPieces: React.FC<CapturedPiecesProps & PropsWithChildren> = memo(function CapturedPieces({ children, boardAlignment, size }) {
+    const capturedPieces = useGameStore(capturedPiecesSelector, shallow);
     return (
         <>
             <div className="panel-wrapper__pieces panel-wrapper__pieces--upper">
@@ -251,7 +246,6 @@ const CapturedPieces: React.FC<CapturedPiecesProps & PropsWithChildren> = memo(f
 });
 
 type GameTimerProps = {
-    gameId: string
     boardAlignment: boolean
 }
 
@@ -259,14 +253,13 @@ function parseTime(ms: number) {
     return new Date(ms).toISOString().slice(14, 19);
 }
 
-export const GameTimer: React.FC<GameTimerProps & PropsWithChildren> = memo(function GameTimer({ gameId, children, boardAlignment }) {
-    const useChessStore = subscribeToGameStore(gameId);
+export const GameTimer: React.FC<GameTimerProps & PropsWithChildren> = memo(function GameTimer({ children, boardAlignment }) {
     const [
         timeLeftWhite,
         timeLeftBlack,
         gameStatus,
         decrementTimer
-    ] = useChessStore(timerSelector, shallow);
+    ] = useGameStore(timerSelector, shallow);
     const intervalRef = useRef<ReturnType<typeof setInterval>>();
 
     useEffect(() => {
