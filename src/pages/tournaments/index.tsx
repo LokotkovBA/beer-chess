@@ -2,7 +2,7 @@ import { type GetStaticProps, type NextPage } from "next";
 import { useSession } from "next-auth/react";
 import Head from "next/head";
 import { toast } from "react-hot-toast";
-import { generateSSGHelper } from "~/server/helpers/ssgHelper";
+import { generateServerSideHelper } from "~/server/helpers/ssgHelper";
 import { api } from "~/utils/api";
 
 const RoomsPage: NextPage = () => {
@@ -34,7 +34,7 @@ const RoomsPage: NextPage = () => {
 export default RoomsPage;
 
 export const getStaticProps: GetStaticProps = async () => {
-    const ssg = generateSSGHelper();
+    const ssg = generateServerSideHelper();
     await ssg.tournaments.getAll.prefetch();
 
     return {

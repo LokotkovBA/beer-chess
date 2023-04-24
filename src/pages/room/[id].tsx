@@ -1,7 +1,7 @@
 import type { GetStaticPaths, GetStaticProps, NextPage } from "next";
 import Head from "next/head";
 import { api } from "~/utils/api";
-import { generateSSGHelper } from "~/server/helpers/ssgHelper";
+import { generateServerSideHelper } from "~/server/helpers/ssgHelper";
 import React, { useEffect, useState } from "react";
 import { ChessBoard } from "~/components/ChessBoard";
 import { socket } from "~/server/gameServer";
@@ -95,7 +95,7 @@ const ReadyForm: React.FC<{ roomId: string, creatorName: string, name: string }>
 
 
 export const getStaticProps: GetStaticProps = async (context) => {
-    const ssg = generateSSGHelper();
+    const ssg = generateServerSideHelper();
 
     const roomId = context.params?.id;
 

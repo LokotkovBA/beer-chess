@@ -1,7 +1,7 @@
 import type { GetStaticPaths, GetStaticProps, NextPage } from "next";
 import Head from "next/head";
 import { api } from "~/utils/api";
-import { generateSSGHelper } from "~/server/helpers/ssgHelper";
+import { generateServerSideHelper } from "~/server/helpers/ssgHelper";
 
 
 const RoomPage: NextPage<{ id: string }> = ({ id }) => {
@@ -40,7 +40,7 @@ export default RoomPage;
 
 
 export const getStaticProps: GetStaticProps = async (context) => {
-    const ssg = generateSSGHelper();
+    const ssg = generateServerSideHelper();
 
     const id = context.params?.id;
 

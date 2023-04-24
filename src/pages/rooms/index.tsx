@@ -4,7 +4,7 @@ import { api } from "~/utils/api";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { toast } from "react-hot-toast";
-import { generateSSGHelper } from "~/server/helpers/ssgHelper";
+import { generateServerSideHelper } from "~/server/helpers/ssgHelper";
 import { useRef, useState } from "react";
 import { CreationForm } from "~/components/CreationForm";
 import { socket } from "~/server/gameServer";
@@ -80,7 +80,7 @@ const CreateRoomSection: React.FC = () => {
 export default RoomsPage;
 
 export const getStaticProps: GetStaticProps = async () => {
-    const ssg = generateSSGHelper();
+    const ssg = generateServerSideHelper();
 
     await ssg.rooms.getAll.prefetch();
     return {

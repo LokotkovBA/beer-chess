@@ -1,7 +1,7 @@
 import type { GetStaticPaths, GetStaticProps, NextPage } from "next";
 import Head from "next/head";
 import Profile from "~/components/Profile";
-import { generateSSGHelper } from "~/server/helpers/ssgHelper";
+import { generateServerSideHelper } from "~/server/helpers/ssgHelper";
 import { api } from "~/utils/api";
 
 
@@ -31,7 +31,7 @@ export const getStaticProps: GetStaticProps = async (context) => {
     if (typeof slug !== "string") throw new Error("no username");
     const username = slug[0] === "@" ? slug.replace("@", "").toLowerCase() : "";
 
-    const ssg = generateSSGHelper();
+    const ssg = generateServerSideHelper();
     await ssg.users.get.prefetch({ username });
     return {
         props: {
